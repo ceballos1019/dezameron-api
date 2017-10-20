@@ -1,5 +1,5 @@
 name := """dezameron-api"""
-organization := "co.edu.udea"
+//organization := "co.edu.udea"
 
 version := "1.0-SNAPSHOT"
 
