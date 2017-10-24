@@ -3,7 +3,7 @@ package controllers
 import javax.inject._
 
 import models.{Bed, Hotel}
-import models.Hotel.collection
+import models.Hotel.hotels
 import models.Room.rooms
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
 import play.api._
@@ -34,9 +34,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     }
 
   def insert = Action{
-    val hotel: Hotel = Hotel(8, "InsertTest4")
-    collection.insertOne(hotel).results()
-    Ok("Ingresado papo")
+    var hotel = hotels.find().headResult();
+    var json = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
+      hotel.check_out, hotel.hotel_thumbnail,hotel.hotel_website, rooms.find().results())
+    Ok(Json.toJson(json));
   }
   /**
     * Create an Action to render an HTML page.

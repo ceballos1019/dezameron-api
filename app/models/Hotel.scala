@@ -8,19 +8,33 @@ import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistr
 import org.mongodb.scala.{Completed, Document, MongoClient, MongoCollection, MongoDatabase, Observer}
 import play.api.libs.json._
 import models.Helpers._
+import models.Room.codecRegistry
 
-case class  Hotel(_id: ObjectId, hotel_id: Double, hotel_name: String)
+case class Location(address:String,lat:String, long:String)
+
+object Location{
+  val codecLocation  = fromRegistries(fromProviders(classOf[Location]),DEFAULT_CODEC_REGISTRY)
+  implicit val locationWrite = Json.writes[Location]
+}
+
+case class  Hotel(_id: ObjectId, hotel_id: String, hotel_name: String,
+                  hotel_location: Location, hotel_thumbnail:String,
+                  check_in:String,check_out:String, hotel_website:String,
+                  rooms:Seq[Room])
 
 object Hotel {
 
-  def apply(hotel_id: Double, hotel_name: String): Hotel =
-    Hotel(new ObjectId(),hotel_id,hotel_name)
+  def apply(hotel_id: String, hotel_name: String, hotel_location: Location, hotel_thumbnail:String,
+            check_in:String,check_out:String, hotel_website:String,rooms:Seq[Room]): Hotel =
+
+    Hotel(new ObjectId(),hotel_id:String,hotel_name:String, hotel_location: Location, hotel_thumbnail:String,
+      check_in:String,check_out:String, hotel_website:String,rooms:Seq[Room])
 
   //Para poder convertir el modelo a BSON y viceversa
-  val codecRegistry = fromRegistries(fromProviders(classOf[Hotel]), DEFAULT_CODEC_REGISTRY )
-  val mongoClient: MongoClient = MongoClient()
-  val database: MongoDatabase = mongoClient.getDatabase("dezamerondb").withCodecRegistry(codecRegistry)
-  val collection: MongoCollection[Hotel] = database.getCollection("hotel")
+  val codecRegistry = fromRegistries(fromProviders(classOf[Hotel]),Location.codecLocation, DEFAULT_CODEC_REGISTRY )
+  val mongoClient: MongoClient = MongoClient("mongodb://scaladores:root@ds121945.mlab.com:21945/heroku_8bc7c40l")
+  val database: MongoDatabase = mongoClient.getDatabase("heroku_8bc7c40l").withCodecRegistry(codecRegistry)
+  val hotels: MongoCollection[Hotel] = database.getCollection("hotels")
 
   implicit val objectIdWrites = new Writes[ObjectId] {
     def writes(oId: ObjectId): JsValue = {
