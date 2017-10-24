@@ -25,19 +25,19 @@ import org.mongodb.scala._
 
 object Helpers {
 
-  implicit class DocumentObservable[Hotel](val observable: Observable[Document]) extends ImplicitObservable[Document] {
+  implicit class DocumentObservable[Room](val observable: Observable[Document]) extends ImplicitObservable[Document] {
     override val converter: (Document) => String = (doc) => doc.toJson
   }
 
-  implicit class GenericObservable[Hotel](val observable: Observable[Hotel]) extends ImplicitObservable[Hotel] {
-    override val converter: (Hotel) => String = (doc) => doc.toString
+  implicit class GenericObservable[Room](val observable: Observable[Room]) extends ImplicitObservable[Room] {
+    override val converter: (Room) => String = (doc) => doc.toString
   }
 
-  trait ImplicitObservable[Hotel] {
-    val observable: Observable[Hotel]
-    val converter: (Hotel) => String
+  trait ImplicitObservable[Room] {
+    val observable: Observable[Room]
+    val converter: (Room) => String
 
-    def results(): Seq[Hotel] = Await.result(observable.toFuture(), Duration(10, TimeUnit.SECONDS))
+    def results(): Seq[Room] = Await.result(observable.toFuture(), Duration(10, TimeUnit.SECONDS))
     def headResult() = Await.result(observable.head(), Duration(10, TimeUnit.SECONDS))
     def printResults(initial: String = ""): Unit = {
       if (initial.length > 0) print(initial)
