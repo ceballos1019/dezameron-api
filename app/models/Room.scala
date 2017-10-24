@@ -23,9 +23,9 @@ object Room{
   //Para poder convertir la colección en BSON y viceversa
   val codecRegistry  = fromRegistries(fromProviders(classOf[Room]),DEFAULT_CODEC_REGISTRY)
 
-  val mongoClient: MongoClient = MongoClient()
-  val database: MongoDatabase = mongoClient.getDatabase("dezamerondb").withCodecRegistry(codecRegistry)
-  val rooms: MongoCollection[Room] = database.getCollection("room")
+  val mongoClient: MongoClient = MongoClient("mongodb://heroku_8bc7c40l@ds121945.mlab.com:21945")
+  val database: MongoDatabase = mongoClient.getDatabase("heroku_8bc7c40l").withCodecRegistry(codecRegistry)
+  val rooms: MongoCollection[Room] = database.getCollection("rooms")
 
   implicit val objectIdWrites = new Writes[ObjectId] {
     def writes(oId: ObjectId): JsValue = {

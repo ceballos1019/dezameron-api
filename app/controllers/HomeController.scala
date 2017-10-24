@@ -20,7 +20,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 {
 
   def test = Action{
-    Ok(Json.toJson(collection.find().results()))
+    Ok(Json.toJson(rooms.find().results()))
   }
 
   //http://localhost:9000/v1/rooms?arrive_date=hola&leave_date=chao&city=05001&hosts=3&room_type=L
