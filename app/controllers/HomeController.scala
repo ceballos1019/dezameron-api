@@ -29,15 +29,22 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      Ok(Json.toJson(rooms.find(and(equal("city", city), equal("capacity",hosts),
-        equal("room_type",room_type))).results()))
+      var hotel = hotels.find().headResult();
+
+      var rooms_res = rooms.find(and(equal("city", city), equal("capacity",hosts),
+        equal("room_type",room_type))).results()
+
+      var json_res = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
+        hotel.check_out, hotel.hotel_thumbnail,hotel.hotel_website, rooms_res)
+      
+      Ok(Json.toJson(json_res))
     }
 
   def insert = Action{
     var hotel = hotels.find().headResult();
-    var json = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
+    var json_res = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
       hotel.check_out, hotel.hotel_thumbnail,hotel.hotel_website, rooms.find().results())
-    Ok(Json.toJson(json));
+    Ok(Json.toJson(json_res));
   }
   /**
     * Create an Action to render an HTML page.
