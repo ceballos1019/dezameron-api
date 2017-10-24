@@ -5,24 +5,31 @@ import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistr
 import org.mongodb.scala.{MongoClient, MongoCollection, MongoDatabase}
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.bson.codecs.DEFAULT_CODEC_REGISTRY
+import org.mongodb.scala.bson.collection.mutable.Document
 import play.api.libs.json.{JsString, JsValue, Json, Writes}
 
+
+
+
 case class Room(_id:ObjectId, room_id: Int, hotel_id: Int, room_type:String,
-                city:String, capacity: Int, price:Int, currency:String,
-                description:String)
+                city:String, capacity: Int, price:Int, currency:String, room_thumbnail:String,
+                description:String, beds: Bed)
 
 object Room{
 
   def apply( room_id: Int, hotel_id: Int, room_type:String,
-             city:String, capacity: Int, price:Int, currency:String,
-             description:String): Room =
-    Room(new ObjectId(),room_id: Int, hotel_id: Int, room_type:String,
-      city:String, capacity: Int, price:Int, currency:String,
-      description:String)
+             city:String, capacity: Int, price:Int,
+             currency:String, room_thumbnail:String,
+             description:String, beds: Bed): Room =
+
+    Room(new ObjectId(),room_id: Int, hotel_id: Int,
+      room_type:String, city:String, capacity: Int,
+      price:Int, currency:String,room_thumbnail:String,
+      description:String,  beds: Bed)
 
   //Para poder convertir la colección en BSON y viceversa
-  val codecRegistry  = fromRegistries(fromProviders(classOf[Room]),DEFAULT_CODEC_REGISTRY)
 
+  val codecRegistry  = fromRegistries(fromProviders(classOf[Room]),Bed.codecBed,DEFAULT_CODEC_REGISTRY)
   val mongoClient: MongoClient = MongoClient("mongodb://scaladores:root@ds121945.mlab.com:21945/heroku_8bc7c40l")
   val database: MongoDatabase = mongoClient.getDatabase("heroku_8bc7c40l").withCodecRegistry(codecRegistry)
   val rooms: MongoCollection[Room] = database.getCollection("rooms")
@@ -39,3 +46,4 @@ object Room{
 
   implicit val roomWrite = Json.writes[Room]
 }
+

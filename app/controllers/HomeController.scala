@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import models.Hotel
+import models.{Bed, Hotel}
 import models.Hotel.collection
 import models.Room.rooms
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
@@ -11,6 +11,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import models.Helpers._
 import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Projections._
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -19,6 +20,7 @@ import org.mongodb.scala.model.Filters._
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc)
 {
 
+  var beds = Bed(1,2)
   def test = Action{
     Ok(Json.toJson(rooms.find().results()))
   }
