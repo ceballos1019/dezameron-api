@@ -1,10 +1,12 @@
 package controllers
 
+import java.util.NoSuchElementException
 import javax.inject._
 
-import models.Hotel
+import models.{Hotel, Reservation}
 import models.Hotel.collection
 import models.Room.rooms
+import models.Reservation.reservations
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
 import play.api._
 import play.api.libs.json.Json
@@ -20,7 +22,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 {
 
   def test = Action{
-    Ok(Json.toJson(rooms.find().results()))
+    Ok(Json.toJson(reservations.find().results()))
   }
 
   //http://localhost:9000/v1/rooms?arrive_date=hola&leave_date=chao&city=05001&hosts=3&room_type=L
@@ -31,10 +33,20 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         equal("room_type",room_type))).results()))
     }
 
-  def insert = Action{
-    val hotel: Hotel = Hotel(8, "InsertTest4")
-    collection.insertOne(hotel).results()
-    Ok("Ingresado papo")
+  def reserve() = Action { implicit request =>
+      val bodyAsJson = request.body.asJson.get
+      bodyAsJson.validate[Reservation].fold(
+        /*Succesful*/
+        valid = response => {
+          reservations.insertOne(response).results()
+          Ok(Json.toJson(
+            Map("message" -> bodyAsJson)))
+        },
+
+        /*Error*/
+        invalid = error => BadRequest(Json.toJson(
+          Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
+      )
   }
   /**
     * Create an Action to render an HTML page.

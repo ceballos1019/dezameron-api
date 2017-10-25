@@ -6,8 +6,7 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 GET     /test                       controllers.HomeController.test
-GET    /insert                      controllers.HomeController.insert
 GET    /v1/rooms                    controllers.HomeController.search(arrive_date: String, leave_date: String, city:String,hosts: Int, room_type:String)
-
+POST   /v1/rooms/reserve            controllers.HomeController.reserve
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
