@@ -3,10 +3,8 @@ package controllers
 import java.util.NoSuchElementException
 import javax.inject._
 
-
-import models.{Bed, Hotel}
+import models.{Bed, Hotel, Reservation}
 import models.Hotel.hotels
-
 import models.Room.rooms
 import models.Reservation.reservations
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
@@ -33,13 +31,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      var hotel = hotels.find().headResult();
+      var hotel = hotels.find(equal("city",city)).projection(exclude("_id","city")).headResult();
 
       var rooms_res = rooms.find(and(equal("city", city), equal("capacity",hosts),
-        equal("room_type",room_type))).results()
+        equal("room_type",room_type))).projection(exclude("room_id","hotel_id","city")).results()
 
-      var json_res = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
-        hotel.check_out, hotel.hotel_thumbnail,hotel.hotel_website, rooms_res)
+      var json_res = Hotel(hotel.hotel_id,hotel.hotel_name,hotel.city, hotel.hotel_location,hotel.hotel_thumbnail,
+        hotel.check_in, hotel.check_out,hotel.hotel_website, rooms_res)
 
       Ok(Json.toJson(json_res))
     }

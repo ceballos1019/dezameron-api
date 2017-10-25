@@ -11,21 +11,21 @@ import play.api.libs.json.{JsString, JsValue, Json, Writes}
 
 
 
-case class Room(_id:ObjectId, room_id: Int, hotel_id: Int, room_type:String,
-                city:String, capacity: Int, price:Int, currency:String, room_thumbnail:String,
+case class Room( room_id: Option[Int], hotel_id:  Option[Int], room_type:String,
+                city:Option[String], capacity: Int, price:Int, currency:String, room_thumbnail:String,
                 description:String, beds: Bed)
 
 object Room{
 
-  def apply( room_id: Int, hotel_id: Int, room_type:String,
-             city:String, capacity: Int, price:Int,
+  /*def apply( room_id:  Option[Int], hotel_id:  Option[Int], room_type:String,
+             city:Option[String], capacity: Int, price:Int,
              currency:String, room_thumbnail:String,
              description:String, beds: Bed): Room =
 
-    Room(new ObjectId(),room_id: Int, hotel_id: Int,
-      room_type:String, city:String, capacity: Int,
+    Room(new ObjectId(),room_id:  Option[Int], hotel_id:  Option[Int],
+      room_type:String, city:Option[String], capacity: Int,
       price:Int, currency:String,room_thumbnail:String,
-      description:String,  beds: Bed)
+      description:String,  beds: Bed)*/
 
   //Para poder convertir la colección en BSON y viceversa
 
@@ -38,11 +38,11 @@ object Room{
   val database : MongoDatabase = mongoClient.getDatabase("dezamerondb").withCodecRegistry(codecRegistry)
   val rooms : MongoCollection[Room] = database.getCollection("room")*/
 
-  implicit val objectIdWrites = new Writes[ObjectId] {
+  /*implicit val objectIdWrites = new Writes[ObjectId] {
     def writes(oId: ObjectId): JsValue = {
       JsString(oId.toString)
     }
-  }
+  }*/
 
   implicit val roomWrite = Json.writes[Room]
 }
