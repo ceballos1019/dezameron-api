@@ -36,7 +36,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
       var json_res = Hotel(hotel.hotel_id,hotel.hotel_name, hotel.hotel_location,hotel.check_in,
         hotel.check_out, hotel.hotel_thumbnail,hotel.hotel_website, rooms_res)
-      
+
       Ok(Json.toJson(json_res))
     }
 
