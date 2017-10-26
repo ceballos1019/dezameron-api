@@ -14,6 +14,8 @@ import play.api.mvc._
 import models.Helpers._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
+
+import scala.util.Random
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -51,6 +53,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           /*Succesful*/
           valid = response => {
             if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+              response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
               reservations.insertOne(response).headResult()
               Ok(Json.toJson(
                 Map("message" -> response.reservation_id)))
@@ -87,5 +90,14 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                           equal("room_type", room_type),
                           equal("beds", beds))).results()
     room.nonEmpty
+  }
+
+  def generateCode(hotel_id: Int, room_type: String, beds: Bed, arrive_date: String): Option[String] = {
+    val hotelCode = String.valueOf(hotel_id)
+    val roomCode = room_type
+    val bedsCode = "S".concat(String.valueOf(beds.simple)).concat("D").concat(String.valueOf(beds.double))
+    val dateCode = arrive_date.split("-").mkString("")
+    val keyCode = "K".concat(String.valueOf(Math.abs(Random.nextInt())))
+    Option("RDZM".concat(hotelCode).concat(roomCode).concat(bedsCode).concat(dateCode).concat(keyCode))
   }
 }
