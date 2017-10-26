@@ -7,13 +7,13 @@ import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.bson.codecs.DEFAULT_CODEC_REGISTRY
 import play.api.libs.json._
 
-case class Reservation(reservation_id: Int, arrive_date: String, leave_date: String,
-                capacity: Int, hotel_id: Int)
+case class Reservation(reservation_id: Int, arrive_date: String, leave_date: String, room_type:String,
+                capacity: Int, beds: Bed, hotel_id: Int, user: User)
 
 object Reservation{
 
     //Para poder convertir la colección en BSON y viceversa
-  val codecRegistry  = fromRegistries(fromProviders(classOf[Reservation]),DEFAULT_CODEC_REGISTRY)
+  val codecRegistry  = fromRegistries(fromProviders(classOf[Reservation]), Bed.codecBed, User.codecUser, DEFAULT_CODEC_REGISTRY)
 
   val mongoClient: MongoClient = MongoClient("mongodb://scaladores:root@ds121945.mlab.com:21945/heroku_8bc7c40l")
   val database: MongoDatabase = mongoClient.getDatabase("heroku_8bc7c40l").withCodecRegistry(codecRegistry)
