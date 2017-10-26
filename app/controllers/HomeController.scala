@@ -55,7 +55,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           Map("message" -> "Invalid leave date format")))
       }
       else {
-        var reserved_rooms = checkDates(arrive_date,leave_date)
+        var reserved_rooms = checkDates(arrive_date,leave_date,city,room_type)
         var hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
         var rooms_res = rooms.find(and(equal("city", city), equal("capacity", hosts),
@@ -121,21 +121,24 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     room.nonEmpty
   }
 
-  def checkDates(arrive_date:String, leave_date:String):Seq[Reservation] =
+  def checkDates(arrive_date:String, leave_date:
+  String, city:String, room_type:String):Seq[Reservation] =
   {
     val new_arrive  = arrive_date.replace("-","").toInt
     val new_leave = leave_date.replace("-","").toInt
-
-    var reservation_list:Seq[Reservation] = reservations.find().results()
+    var hotel_id = city match{
+      case "05001" => "1"
+      case "11001" => "2"
+    }
+    var reservation_list:Seq[Reservation] = reservations.find(and(equal("room_type",room_type),
+      equal("hotel_id",hotel_id))).results()
 
     reservation_list = reservation_list.filter(x =>
       (x.arrive_date.replace("-","").toInt <= new_arrive &&
       x.leave_date.replace("-","").toInt >= new_arrive) ||
       (x.arrive_date.replace("-","").toInt <= new_leave &&
       x.leave_date.replace("-","").toInt >= new_leave))
-
-    for(reservation <- reservation_list)
-      println(reservation)
+    
     reservation_list
   }
 
