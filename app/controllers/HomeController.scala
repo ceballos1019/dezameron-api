@@ -50,6 +50,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
+            checkRoom(response.room_type, response.beds)
             reservations.insertOne(response).results()
             Ok(Json.toJson(
               Map("message" -> bodyAsJson)))
@@ -71,5 +72,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     */
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())
+  }
+
+  def checkRoom(room_type: String, beds: Bed): Boolean = {
+    
   }
 }
