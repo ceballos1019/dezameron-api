@@ -3,7 +3,7 @@ package controllers
 import java.util.NoSuchElementException
 import javax.inject._
 
-import models.{Bed, Hotel, Reservation}
+import models.{Bed, Hotel, Reservation, Room}
 import models.Hotel.hotels
 import models.Room.rooms
 import models.Reservation.reservations
@@ -27,19 +27,51 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(Json.toJson(reservations.find().results()))
   }
 
-  //http://localhost:9000/v1/rooms?arrive_date=hola&leave_date=chao&city=05001&hosts=3&room_type=L
+  //http://localhost:9000/v1/rooms?arrive_date=2017-02-20&leave_date=2017-03-15&city=11001&hosts=2&room_type=L
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      var hotel = hotels.find(equal("city",city)).projection(exclude("_id","city")).headResult();
+      if(!city.equals("05001") && !city.equals("11001"))
+        {
+          BadRequest(Json.toJson(
+            Map("message" -> "City invalid code")))
+        }
+      else if(hosts <= 0 || hosts > 5 )
+        {
+          BadRequest(Json.toJson(
+            Map("message" -> "Hosts must be between 1 and 5")))
+        }
+      else if(!room_type.equals("L") && !room_type.equals("S"))
+        {
+          BadRequest(Json.toJson(
+            Map("message" -> "Invalid room type")))
+        }
+      else if(!arrive_date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")){
+        BadRequest(Json.toJson(
+          Map("message" -> "Invalid arrive date format")))
+      }
+      else if(!leave_date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")){
+        BadRequest(Json.toJson(
+          Map("message" -> "Invalid leave date format")))
+      }
+      else {
+        var reserved_rooms = checkDates(arrive_date,leave_date)
+        var hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
-      var rooms_res = rooms.find(and(equal("city", city), equal("capacity",hosts),
-        equal("room_type",room_type))).projection(exclude("room_id","hotel_id","city")).results()
+        var rooms_res = rooms.find(and(equal("city", city), equal("capacity", hosts),
+          equal("room_type", room_type))).projection(exclude("room_id", "hotel_id", "city")).results()
 
-      var json_res = Hotel(hotel.hotel_id,hotel.hotel_name,hotel.city, hotel.hotel_location,hotel.hotel_thumbnail,
-        hotel.check_in, hotel.check_out,hotel.hotel_website, rooms_res)
+        for(reserved <- reserved_rooms)
+        {
+          rooms_res = rooms_res.filterNot(x => x.beds.simple == reserved.beds.simple
+          && x.beds.double == reserved.beds.double)
+        }
 
-      Ok(Json.toJson(json_res))
+        var json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
+          hotel.check_in, hotel.check_out, hotel.hotel_website, rooms_res)
+
+        Ok(Json.toJson(json_res))
+      }
     }
 
 
@@ -88,4 +120,23 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                           equal("beds", beds))).results()
     room.nonEmpty
   }
+
+  def checkDates(arrive_date:String, leave_date:String):Seq[Reservation] =
+  {
+    val new_arrive  = arrive_date.replace("-","").toInt
+    val new_leave = leave_date.replace("-","").toInt
+
+    var reservation_list:Seq[Reservation] = reservations.find().results()
+
+    reservation_list = reservation_list.filter(x =>
+      (x.arrive_date.replace("-","").toInt <= new_arrive &&
+      x.leave_date.replace("-","").toInt >= new_arrive) ||
+      (x.arrive_date.replace("-","").toInt <= new_leave &&
+      x.leave_date.replace("-","").toInt >= new_leave))
+
+    for(reservation <- reservation_list)
+      println(reservation)
+    reservation_list
+  }
+
 }
