@@ -44,20 +44,23 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
 
   def reserve() = Action { implicit request =>
-      val bodyAsJson = request.body.asJson.get
-      bodyAsJson.validate[Reservation].fold(
-        /*Succesful*/
-        valid = response => {
-          reservations.insertOne(response).results()
-          Ok(Json.toJson(
-            Map("message" -> bodyAsJson)))
-        },
+      /*Check if the request has body*/
+      if(request.hasBody) {
+        val bodyAsJson = request.body.asJson.get
+        bodyAsJson.validate[Reservation].fold(
+          /*Succesful*/
+          valid = response => {
+            reservations.insertOne(response).results()
+            Ok(Json.toJson(
+              Map("message" -> bodyAsJson)))
+          },
 
-        /*Error*/
-        invalid = error => BadRequest(Json.toJson(
-          Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
-      )
-
+          /*Error*/
+          invalid = error => BadRequest(Json.toJson(
+            Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
+        )
+      }
+    BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
   }
   /**
     * Create an Action to render an HTML page.
