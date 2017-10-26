@@ -50,18 +50,24 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            checkRoom(response.room_type, response.beds)
-            reservations.insertOne(response).results()
-            Ok(Json.toJson(
-              Map("message" -> bodyAsJson)))
+            if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+              reservations.insertOne(response).headResult()
+              Ok(Json.toJson(
+                Map("message" -> response.reservation_id)))
+            } else {
+              BadRequest(Json.toJson(
+                Map("message" -> "The room does not exist")
+              ))
+            }
           },
 
           /*Error*/
           invalid = error => BadRequest(Json.toJson(
             Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
         )
+      } else {
+        BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
       }
-    BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
   }
   /**
     * Create an Action to render an HTML page.
@@ -74,7 +80,12 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
-  def checkRoom(room_type: String, beds: Bed): Boolean = {
-    
+  def checkRoom(hotel_id: Int, room_type: String, beds: Bed): Boolean = {
+
+    var room = rooms.find(and(
+                          equal("hotel_id", hotel_id),
+                          equal("room_type", room_type),
+                          equal("beds", beds))).results()
+    room.nonEmpty
   }
 }
