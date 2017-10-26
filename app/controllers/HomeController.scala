@@ -54,6 +54,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         BadRequest(Json.toJson(
           Map("message" -> "Invalid leave date format")))
       }
+      else if(arrive_date.replace("-","").toInt > leave_date.replace("-","").toInt)
+      {
+        BadRequest(Json.toJson(
+          Map("message" -> "Leave date must be greater than arrive date")))
+      }
       else {
         var reserved_rooms = checkDates(arrive_date,leave_date,city,room_type)
         var hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
@@ -138,7 +143,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       x.leave_date.replace("-","").toInt >= new_arrive) ||
       (x.arrive_date.replace("-","").toInt <= new_leave &&
       x.leave_date.replace("-","").toInt >= new_leave))
-    
+
     reservation_list
   }
 
