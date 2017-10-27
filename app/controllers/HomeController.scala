@@ -90,8 +90,6 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            println(response.beds.simple + response.beds.double)
-            println(s"Capacity: ${response.capacity}")
             if(response.capacity <= 0 || response.capacity > 5) {
               BadRequest(Json.toJson(
                 Map("message" -> "Hosts must be between 1 and 5")))
