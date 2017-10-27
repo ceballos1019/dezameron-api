@@ -48,13 +48,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           BadRequest(Json.toJson(
             Map("message" -> "Invalid room type")))
         }
-      else if(!arrive_date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")){
+      else if(!arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
         BadRequest(Json.toJson(
-          Map("message" -> "Invalid arrive date format")))
+          Map("message" -> "Invalid arrive date")))
       }
-      else if(!leave_date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")){
+      else if(!leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
         BadRequest(Json.toJson(
-          Map("message" -> "Invalid leave date format")))
+          Map("message" -> "Invalid leave date")))
       }
       else if(arrive_date.replace("-","").toInt > leave_date.replace("-","").toInt)
       {
@@ -93,7 +93,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
               response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
               reservations.insertOne(response).headResult()
               Ok(Json.toJson(
-                Map("reservation_id" -> response.reservation_id)))
+                Map("reservation" -> response.reservation_id)))
             } else {
               BadRequest(Json.toJson(
                 Map("message" -> "The room does not exist")
