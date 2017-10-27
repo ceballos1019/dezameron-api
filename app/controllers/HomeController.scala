@@ -10,6 +10,7 @@ import models.Reservation.reservations
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
 import play.api._
 import play.api.libs.json.Json
+import scala.util.control.Breaks
 import play.api.mvc._
 import models.Helpers._
 import org.mongodb.scala.model.Filters._
@@ -105,10 +106,31 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
               BadRequest(Json.toJson(
                 Map("message" -> "Leave date must be greater than arrive date")))
             } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
-              response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
-              reservations.insertOne(response).headResult()
-              Ok(Json.toJson(
-                Map("reservation" -> response.reservation_id)))
+              val city = response.hotel_id match{
+                case 1 => "05001"
+                case 2 => "11001"
+              }
+              val reservedRooms = checkDates(response.arrive_date, response.leave_date, city, response.room_type)
+              var isReserved = false
+              val loop = new Breaks
+              loop.breakable {
+                for (reserved <- reservedRooms) {
+                  if (reserved.beds.simple == response.beds.simple && reserved.beds.double == response.beds.double) {
+                    isReserved = true
+                    loop.break
+                  }
+                }
+              }
+              if(isReserved){
+                BadRequest(Json.toJson(
+                  Map("message" -> "The room is not available")
+                ))
+              } else {
+                response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
+                reservations.insertOne(response).headResult()
+                Ok(Json.toJson(
+                  Map("reservation" -> response.reservation_id)))
+              }
             } else {
               BadRequest(Json.toJson(
                 Map("message" -> "The room does not exist")
@@ -160,9 +182,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     val new_arrive  = arrive_date.replace("-","").toInt
     val new_leave = leave_date.replace("-","").toInt
     val hotel_id = city match{
-      case "05001" => "1"
-      case "11001" => "2"
+      case "05001" => 1
+      case "11001" => 2
     }
+
     var reservation_list:Seq[Reservation] = reservations.find(and(equal("room_type",room_type),
       equal("hotel_id",hotel_id))).results()
 
