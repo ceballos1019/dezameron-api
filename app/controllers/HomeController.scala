@@ -36,7 +36,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       if(!city.equals("05001") && !city.equals("11001"))
         {
           BadRequest(Json.toJson(
-            Map("message" -> "City invalid code")))
+            Map("message" -> "Invalid city code")))
         }
       else if(hosts <= 0 || hosts > 5 )
         {
@@ -62,8 +62,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           Map("message" -> "Leave date must be greater than arrive date")))
       }
       else {
-        var reserved_rooms = checkDates(arrive_date,leave_date,city,room_type)
-        var hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
+        val reserved_rooms = checkDates(arrive_date, leave_date, city, room_type)
+        val hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
         var rooms_res = rooms.find(and(equal("city", city), equal("capacity", hosts),
           equal("room_type", room_type))).projection(exclude("room_id", "hotel_id", "city")).results()
@@ -89,7 +89,22 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+            if(response.capacity <= 0 || response.capacity > 5) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Hosts must be between 1 and 5")))
+            } else if(!response.room_type.equals("L") && !response.room_type.equals("S")) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Invalid room type")))
+            } else if(!response.arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Invalid arrive date")))
+            } else if(!response.leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Invalid leave date")))
+            } else if(response.arrive_date.replace("-","").toInt > response.leave_date.replace("-","").toInt) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Leave date must be greater than arrive date")))
+            } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
               response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
               reservations.insertOne(response).headResult()
               Ok(Json.toJson(
@@ -144,7 +159,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   {
     val new_arrive  = arrive_date.replace("-","").toInt
     val new_leave = leave_date.replace("-","").toInt
-    var hotel_id = city match{
+    val hotel_id = city match{
       case "05001" => "1"
       case "11001" => "2"
     }
