@@ -133,7 +133,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                 response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
                 reservations.insertOne(response).headResult()
                 Ok(Json.toJson(
-                  Map("reservation" -> response.reservation_id)))
+                  Map("reservation_id" -> response.reservation_id)))
               }
             } else {
               BadRequest(Json.toJson(
