@@ -107,8 +107,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                 Map("message" -> "Leave date must be greater than arrive date")))
             } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
               val city = response.hotel_id match{
-                case 1 => "05001"
-                case 2 => "11001"
+                case "1" => "05001"
+                case "2" => "11001"
               }
               val reservedRooms = checkDates(response.arrive_date, response.leave_date, city, response.room_type)
               var isReserved = false
@@ -157,7 +157,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
-  def checkRoom(hotel_id: Int, room_type: String, beds: Bed): Boolean = {
+  def checkRoom(hotel_id: String, room_type: String, beds: Bed): Boolean = {
 
     var room = rooms.find(and(
                           equal("hotel_id", hotel_id),
@@ -167,8 +167,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
 
-  def generateCode(hotel_id: Int, room_type: String, beds: Bed, arrive_date: String): Option[String] = {
-    val hotelCode = String.valueOf(hotel_id)
+  def generateCode(hotel_id: String, room_type: String, beds: Bed, arrive_date: String): Option[String] = {
+    val hotelCode = hotel_id
     val roomCode = room_type
     val bedsCode = "S".concat(String.valueOf(beds.simple)).concat("D").concat(String.valueOf(beds.double))
     val dateCode = arrive_date.split("-").mkString("")
@@ -182,8 +182,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     val new_arrive  = arrive_date.replace("-","").toInt
     val new_leave = leave_date.replace("-","").toInt
     val hotel_id = city match{
-      case "05001" => 1
-      case "11001" => 2
+      case "05001" => "1"
+      case "11001" => "2"
     }
 
     var reservation_list:Seq[Reservation] = reservations.find(and(equal("room_type",room_type),

@@ -11,7 +11,7 @@ import play.api.libs.json.{JsString, JsValue, Json, Writes}
 
 
 
-case class Room( room_id: Option[Int], hotel_id:  Option[Int], room_type:String,
+case class Room( room_id: Option[Int], hotel_id:  Option[String], room_type:String,
                 city:Option[String], capacity: Int, price:Int, currency:String, room_thumbnail:String,
                 description:String, beds: Bed)
 
