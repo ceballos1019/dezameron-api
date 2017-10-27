@@ -90,6 +90,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
+            println(response.beds.simple + response.beds.double)
+            println(s"Capacity: ${response.capacity}")
             if(response.capacity <= 0 || response.capacity > 5) {
               BadRequest(Json.toJson(
                 Map("message" -> "Hosts must be between 1 and 5")))
@@ -105,7 +107,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
             } else if(response.arrive_date.replace("-","").toInt > response.leave_date.replace("-","").toInt) {
               BadRequest(Json.toJson(
                 Map("message" -> "Leave date must be greater than arrive date")))
-            } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+            } else if(response.capacity != (response.beds.simple + (response.beds.double*2))) {
+              BadRequest(Json.toJson(
+                Map("message" -> "Beds number does not match with room capacity")))
+            }
+            else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
               val city = response.hotel_id match{
                 case "1" => "05001"
                 case "2" => "11001"
