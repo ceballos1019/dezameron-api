@@ -1,22 +1,17 @@
 package controllers
 
-import java.util.NoSuchElementException
 import javax.inject._
 
-import models.{Bed, Hotel, Reservation, Room}
-import models.Hotel.hotels
-import models.Room.rooms
-import models.Reservation.reservations
-import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
-import play.api._
-import play.api.libs.json.Json
-import scala.util.control.Breaks
-import play.api.mvc._
 import models.Helpers._
+import models._
+import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
+import play.api.libs.json.Json
+import play.api.mvc._
 
 import scala.util.Random
+import scala.util.control.Breaks
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -24,10 +19,15 @@ import scala.util.Random
 @Singleton
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc)
 {
+  /*TODO: Test when insert one document, these variables refresh automatically with that document*/
+  lazy val hotels : MongoCollection[Hotel] = DBHandler.getCollection[Hotel]
+  lazy val rooms : MongoCollection[Room] = DBHandler.getCollection[Room]
+  lazy val reservations : MongoCollection[Reservation] = DBHandler.getCollection[Reservation]
 
-  var beds = Bed(1,2)
-  def test = Action{
-    Ok(Json.toJson(reservations.find().results()))
+    def test = Action{
+    val database : MongoCollection[Reservation]  = DBHandler.getCollection[Reservation]
+    //k(Json.toJson(reservations.find().results()))
+    Ok(Json.toJson(database.find().results()))
   }
 
   //http://localhost:9000/v1/rooms?arrive_date=2017-02-20&leave_date=2017-03-15&city=11001&hosts=2&room_type=L
@@ -75,7 +75,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           && x.beds.double == reserved.beds.double)
         }
 
-        var json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
+        val json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
           hotel.check_in, hotel.check_out, hotel.hotel_website, rooms_res)
 
         Ok(Json.toJson(json_res))
