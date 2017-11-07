@@ -9,6 +9,7 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
 import play.api.libs.json.Json
 import play.api.mvc._
+import utils.ValidationUtils
 
 import scala.util.Random
 import scala.util.control.Breaks
@@ -34,35 +35,12 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      if(!city.equals("05001") && !city.equals("11001"))
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Invalid city code")))
-        }
-      else if(hosts <= 0 || hosts > 5 )
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Hosts must be between 1 and 5")))
-        }
-      else if(!room_type.equals("L") && !room_type.equals("S"))
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Invalid room type")))
-        }
-      else if(!arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
+      val messageValidation = ValidationUtils.validate(city, arrive_date, leave_date,hosts, room_type, null, null)
+      if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
         BadRequest(Json.toJson(
-          Map("message" -> "Invalid arrive date")))
-      }
-      else if(!leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
-        BadRequest(Json.toJson(
-          Map("message" -> "Invalid leave date")))
-      }
-      else if(arrive_date.replace("-","").toInt > leave_date.replace("-","").toInt)
-      {
-        BadRequest(Json.toJson(
-          Map("message" -> "Leave date must be greater than arrive date")))
-      }
-      else {
+          Map("message" -> messageValidation)
+        ))
+      } else {
         val reserved_rooms = checkDates(arrive_date, leave_date, city, room_type)
         val hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
@@ -90,26 +68,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            if(response.capacity <= 0 || response.capacity > 5) {
+            val messageValidation = ValidationUtils.validate(null, response.arrive_date, response.leave_date,
+              response.capacity, response.room_type, response.beds.simple, response.beds.double)
+            if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
               BadRequest(Json.toJson(
-                Map("message" -> "Hosts must be between 1 and 5")))
-            } else if(!response.room_type.equals("L") && !response.room_type.equals("S")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid room type")))
-            } else if(!response.arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid arrive date")))
-            } else if(!response.leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid leave date")))
-            } else if(response.arrive_date.replace("-","").toInt > response.leave_date.replace("-","").toInt) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Leave date must be greater than arrive date")))
-            } else if(response.capacity != (response.beds.simple + (response.beds.double*2))) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Beds number does not match with room capacity")))
-            }
-            else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+                Map("message" -> messageValidation)
+              ))
+            } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
               val city = response.hotel_id match{
                 case "1" => "05001"
                 case "2" => "11001"
