@@ -9,13 +9,15 @@ import models.Room.rooms
 import models.Reservation.reservations
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
 import play.api._
-import play.api.libs.json.Json
+import play.api.libs.json._
+
 import scala.util.control.Breaks
 import play.api.mvc._
 import models.Helpers._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
 
+import scala.concurrent.Future
 import scala.util.Random
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -155,11 +157,19 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     /*Check if the request has body*/
     if(request.hasBody) {
       val bodyAsJson = request.body.asJson.get
-      Ok("Your cancelation is"+ bodyAsJson)
-    }else {
-      Ok("Your cancelation was realized" )
-    }
+      val reservation_id: JsResult[String] = (bodyAsJson \ "reservation_id").validate[String]
+      reservation_id match {
+        case s: JsSuccess[String] => {
+          reservations.deleteOne(equal("reservation_id", s.get))
+          Ok("Your cancelation was done")
         }
+        case e: JsError => Ok("Errors: " + JsError.toJson(e).toString())
+      }
+      } else{
+      Ok("was a problem with your cancelation")
+  }
+  }
+
   /**
     * Create an Action to render an HTML page.
     *
@@ -211,5 +221,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
     reservation_list
   }
+def deleteReservation(value: String) = {
 
+}
 }
