@@ -126,6 +126,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
+  def getReservations() = Action {
+    Ok("test reservations")
+  }
+
   def checkRoom(hotel_id: String, room_type: String, beds: Bed): Boolean = {
 
     var room = rooms.find(and(

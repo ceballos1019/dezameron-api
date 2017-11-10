@@ -144,8 +144,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val reserve = controller.reserve().apply(
         FakeRequest(POST, "/v1/rooms/reserve").withJsonBody(
           Json.parse("""{
-                        "arrive_date": "2017-09-08",
-                        "leave_date": "2017-09-09",
+                        "arrive_date": "2017-11-08",
+                        "leave_date": "2017-11-09",
                         "room_type": "S",
                         "capacity": 5,
                         "beds": {
