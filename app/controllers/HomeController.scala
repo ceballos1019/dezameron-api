@@ -150,6 +150,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
       }
   }
+  //http://localhost:9000/v1/rooms/cancelReservation?hotel_id=2&room_type=&simple=1&double=1
+  def cancelReservation(hotel_id: Int, room_type: String, simple: Int, double: Int) = Action {
+    Ok("Your cancelation was realized")
+  }
   /**
     * Create an Action to render an HTML page.
     *
