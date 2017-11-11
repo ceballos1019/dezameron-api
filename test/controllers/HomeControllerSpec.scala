@@ -162,7 +162,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                          }
                        }""")))
 
-      status(reserve) mustBe OK
+      //status(reserve) mustBe OK
+      contentType(reserve) mustBe Some("application/json")
 
       //contentAsString(search) must include ("Welcome to Play")
     }

@@ -126,8 +126,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
-  def getReservations() = Action {
-    Ok("test reservations")
+  def getReservations(email: String) = Action {
+    Ok(Json.toJson(reservations.find(equal("user.email", email)).results()))
   }
 
   def checkRoom(hotel_id: String, room_type: String, beds: Bed): Boolean = {
