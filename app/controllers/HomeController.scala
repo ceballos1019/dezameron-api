@@ -171,4 +171,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     reservation_list
   }
 
+  /**
+    * Token authentication
+    */
+  def token = Action { implicit request =>
+    Ok(views.html.index(s"Hello ${request.user.firstName} ${request.user.lastName}"))
+  }
+
 }
