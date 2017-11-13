@@ -12,7 +12,7 @@ case class Room( room_id: Option[Int], hotel_id:  Option[String], room_type:Stri
 object Room{
 
   val codecRoom : CodecRegistry  = fromRegistries(fromProviders(classOf[Room]))
-  val COLLECTION_NAME : String = "rooms"
+  val CollectionName : String = "rooms"
 
   implicit val roomWrite : Writes[Room] = Json.writes[Room]
 }

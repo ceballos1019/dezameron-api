@@ -84,8 +84,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                 val reservedRooms = checkDates(response.arrive_date, response.leave_date, city, response.room_type)
 
                 /*Check if the room is reserved*/
-                val isReserved = if (!reservedRooms.exists(room => room.beds.simple == response.beds.simple &&
-                  room.beds.double == response.beds.double)) false else true
+                val isReserved = if (reservedRooms.exists(room => room.beds.simple == response.beds.simple &&
+                  room.beds.double == response.beds.double)) true else false
 
                 if (isReserved) {
                   BadRequest(Json.toJson(
@@ -130,21 +130,21 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(Json.toJson(reservations.find(equal("user.email", email)).results()))
   }
 
-  def checkRoom(hotel_id: String, room_type: String, beds: Bed): Boolean = {
+  def checkRoom(hotelId: String, roomType: String, beds: Bed): Boolean = {
 
     val room = rooms.find(and(
-      equal("hotel_id", hotel_id),
-      equal("room_type", room_type),
+      equal("hotel_id", hotelId),
+      equal("room_type", roomType),
       equal("beds", beds))).results()
     room.nonEmpty
   }
 
 
-  def generateCode(hotel_id: String, room_type: String, beds: Bed, arrive_date: String): Option[String] = {
-    val hotelCode = hotel_id
-    val roomCode = room_type
+  def generateCode(hotelId: String, roomType: String, beds: Bed, arriveDate: String): Option[String] = {
+    val hotelCode = hotelId
+    val roomCode = roomType
     val bedsCode = "S".concat(String.valueOf(beds.simple)).concat("D").concat(String.valueOf(beds.double))
-    val dateCode = arrive_date.split("-").mkString("")
+    val dateCode = arriveDate.split("-").mkString("")
     val secureRandom = new SecureRandom()
     val keyCode = "K".concat(String.valueOf(Math.abs(secureRandom.nextInt())))
     Option("RDZM".concat(hotelCode).concat(roomCode).concat(bedsCode).concat(dateCode).concat(keyCode))

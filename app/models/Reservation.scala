@@ -13,7 +13,7 @@ object Reservation{
 
   /*Codec for Reservation class*/
   val codecReservation : CodecRegistry = fromRegistries(fromProviders(classOf[Reservation]), DEFAULT_CODEC_REGISTRY)
-  val COLLECTION_NAME = "reservations"
+  val CollectionName = "reservations"
 
   implicit val reservationWrite : Writes[Reservation] = Json.writes[Reservation]
   implicit val reservationRead : Reads[Reservation] = Json.reads[Reservation]

@@ -15,8 +15,8 @@ import scala.reflect.ClassTag
 object DBHandler {
 
   /* Database connection properties*/
-  private val URL_CONNECTION: String = "mongodb://scaladores:root@ds121945.mlab.com:21945/heroku_8bc7c40l"
-  private val DATABASE_NAME: String = "heroku_8bc7c40l"
+  private val URLConnection: String = "mongodb://scaladores:root@ds121945.mlab.com:21945/heroku_8bc7c40l"
+  private val DatabaseName: String = "heroku_8bc7c40l"
 
   private val codecRegistry = fromRegistries(Room.codecRoom, Reservation.codecReservation, User.codecUser,
     Bed.codecBed, Hotel.codecHotel, Location.codecLocation, DEFAULT_CODEC_REGISTRY)
@@ -27,7 +27,7 @@ object DBHandler {
     * @return database
     */
   private def getConnection: MongoDatabase = {
-    MongoClient(URL_CONNECTION).getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry)
+    MongoClient(URLConnection).getDatabase(DatabaseName).withCodecRegistry(codecRegistry)
   }
 
   /**
@@ -38,9 +38,9 @@ object DBHandler {
   def getCollection[T: ClassTag]: MongoCollection[T] = {
     val tClass = implicitly[ClassTag[T]].runtimeClass
     val collectionName = tClass.getSimpleName match {
-      case "Reservation" => Reservation.COLLECTION_NAME
-      case "Room" => Room.COLLECTION_NAME
-      case "Hotel" => Hotel.COLLECTION_NAME
+      case "Reservation" => Reservation.CollectionName
+      case "Room" => Room.CollectionName
+      case "Hotel" => Hotel.CollectionName
     }
     val database = getConnection
     database.getCollection(collectionName)
