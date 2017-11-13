@@ -36,17 +36,14 @@ object DBHandler {
     * @return MongoCollection associated with the model class
     */
   def getCollection[T: ClassTag]: MongoCollection[T] = {
-    var collectionName: Option[String] = None
     val tClass = implicitly[ClassTag[T]].runtimeClass
-    tClass.getSimpleName match {
-      case "Reservation" => collectionName = Some(Reservation.COLLECTION_NAME)
-
-      case "Room" => collectionName = Some(Room.COLLECTION_NAME)
-
-      case "Hotel" => collectionName = Some(Hotel.COLLECTION_NAME)
+    val collectionName = tClass.getSimpleName match {
+      case "Reservation" => Reservation.COLLECTION_NAME
+      case "Room" => Room.COLLECTION_NAME
+      case "Hotel" => Hotel.COLLECTION_NAME
     }
     val database = getConnection
-    database.getCollection(collectionName.get)
+    database.getCollection(collectionName)
   }
 
 

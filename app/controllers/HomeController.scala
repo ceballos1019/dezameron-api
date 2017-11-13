@@ -33,31 +33,31 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
   //http://localhost:9000/v1/rooms?arrive_date=2017-02-20&leave_date=2017-03-15&city=11001&hosts=2&room_type=L
-  def search(arrive_date: String, leave_date: String, city: String,
-             hosts: Int, room_type: String) =
+  def search(arriveDate: String, leaveDate: String, city: String,
+             hosts: Int, roomType: String) =
     Action {
-      val messageValidation = ValidationUtils.validate(Some(city), Some(arrive_date), Some(leave_date), Some(hosts),
-        Some(room_type), None, None)
+      val messageValidation = ValidationUtils.validate(Some(city), Some(arriveDate), Some(leaveDate), Some(hosts),
+        Some(roomType), None, None)
       if (!ValidationUtils.NoErrorMessage.equals(messageValidation)) {
         BadRequest(Json.toJson(
           Map("message" -> messageValidation)
         ))
       } else {
-        val reserved_rooms = checkDates(arrive_date, leave_date, city, room_type)
+        val reservedRooms = checkDates(arriveDate, leaveDate, city, roomType)
         val hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
-        var rooms_res = rooms.find(and(equal("city", city), equal("capacity", hosts),
-          equal("room_type", room_type))).projection(exclude("room_id", "hotel_id", "city")).results()
+        var roomsRes = rooms.find(and(equal("city", city), equal("capacity", hosts),
+          equal("room_type", roomType))).projection(exclude("room_id", "hotel_id", "city")).results()
 
-        for (reserved <- reserved_rooms) {
-          rooms_res = rooms_res.filterNot(x => x.beds.simple == reserved.beds.simple
+        for (reserved <- reservedRooms) {
+          roomsRes = roomsRes.filterNot(x => x.beds.simple == reserved.beds.simple
             && x.beds.double == reserved.beds.double)
         }
 
-        val json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
-          hotel.check_in, hotel.check_out, hotel.hotel_website, rooms_res)
+        val jsonResult = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
+          hotel.check_in, hotel.check_out, hotel.hotel_website, roomsRes)
 
-        Ok(Json.toJson(json_res))
+        Ok(Json.toJson(jsonResult))
       }
     }
 
@@ -150,23 +150,23 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Option("RDZM".concat(hotelCode).concat(roomCode).concat(bedsCode).concat(dateCode).concat(keyCode))
   }
 
-  def checkDates(arrive_date: String, leave_date:
-  String, city: String, room_type: String): Seq[Reservation] = {
-    val new_arrive = arrive_date.replace("-", "").toInt
-    val new_leave = leave_date.replace("-", "").toInt
-    val hotel_id = city match {
+  def checkDates(arriveDate: String, leaveDate:
+  String, city: String, roomType: String): Seq[Reservation] = {
+    val newArrive = arriveDate.replace("-", "").toInt
+    val newLeave = leaveDate.replace("-", "").toInt
+    val hotelId = city match {
       case "05001" => "1"
       case "11001" => "2"
     }
 
-    val reservationList: Seq[Reservation] = reservations.find(and(equal("room_type", room_type),
-      equal("hotel_id", hotel_id))).results()
+    val reservationList: Seq[Reservation] = reservations.find(and(equal("room_type", roomType),
+      equal("hotel_id", hotelId))).results()
 
     val reservationsFiltered = reservationList.filter(x =>
-      (x.arrive_date.replace("-", "").toInt <= new_arrive &&
-        x.leave_date.replace("-", "").toInt >= new_arrive) ||
-        (x.arrive_date.replace("-", "").toInt <= new_leave &&
-          x.leave_date.replace("-", "").toInt >= new_leave))
+      (x.arrive_date.replace("-", "").toInt <= newArrive &&
+        x.leave_date.replace("-", "").toInt >= newArrive) ||
+        (x.arrive_date.replace("-", "").toInt <= newLeave &&
+          x.leave_date.replace("-", "").toInt >= newLeave))
 
     reservationsFiltered
   }
