@@ -35,7 +35,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      val messageValidation = ValidationUtils.validate(city, arrive_date, leave_date,hosts, room_type, null, null)
+      val messageValidation = ValidationUtils.validate(Some(city), Some(arrive_date), Some(leave_date),Some(hosts),
+        Some(room_type), None, None)
       if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
         BadRequest(Json.toJson(
           Map("message" -> messageValidation)
@@ -68,8 +69,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            val messageValidation = ValidationUtils.validate(null, response.arrive_date, response.leave_date,
-              response.capacity, response.room_type, response.beds.simple, response.beds.double)
+            val messageValidation = ValidationUtils.validate(None, Some(response.arrive_date), Some(response.leave_date),
+              Some(response.capacity), Some(response.room_type), Some(response.beds.simple), Some(response.beds.double))
             if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
               BadRequest(Json.toJson(
                 Map("message" -> messageValidation)

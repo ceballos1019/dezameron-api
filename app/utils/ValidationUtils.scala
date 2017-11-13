@@ -2,6 +2,7 @@ package utils
 
 /**
   * Class to handle the format validations for the services
+  *
   * @author Andrés Ceballos Sánchez - andres.ceballoss@udea.edu.co
   * @version 1.0.0
   * @since 6/11/2017
@@ -23,53 +24,52 @@ object ValidationUtils {
 
   /**
     * Validate the params that are not null
-    * @param cityCode - 05001 and 11001 are the valid codes
+    *
+    * @param cityCode   - 05001 and 11001 are the valid codes
     * @param arriveDate - date must be in the format YYYY-MM-dd
-    * @param leaveDate - date must be in the format YYYY-MM-dd
-    * @param capacity - value between 0 and 5
-    * @param roomType - "L" or "S"
+    * @param leaveDate  - date must be in the format YYYY-MM-dd
+    * @param capacity   - value between 0 and 5
+    * @param roomType   - "L" or "S"
     * @param simpleBeds - number of simple beds
     * @param doubleBeds - number of double beds
     * @return Message with the error. If there is not an error return NoErrorMessage
     */
-  def validate(cityCode: String, arriveDate: String, leaveDate: String, capacity: Integer, roomType: String,
-              simpleBeds: Integer, doubleBeds: Integer): String = {
+  def validate(cityCode: Option[String], arriveDate: Option[String], leaveDate: Option[String], capacity: Option[Integer],
+               roomType: Option[String], simpleBeds: Option[Integer], doubleBeds: Option[Integer]): String = {
     /*TODO: Check if the params can be null before invoke this method*/
 
     /*Validate the city code if it is not null*/
-    if(cityCode != null && (!cityCode.equals("05001") && !cityCode.equals("11001"))) {
-      return CityErrorMessage
-    }
+    if (cityCode.isDefined && (!cityCode.get.equals("05001") && !cityCode.get.equals("11001"))) {
+      CityErrorMessage
+    } else
 
-    /*Validate the arrive and leave dates format*/
-    if(arriveDate != null && (!arriveDate.matches(DatePattern))) {
-      return ArriveDateErrorMessage
-    }
-    if(leaveDate != null && (!leaveDate.matches(DatePattern))) {
-      return LeaveDateErrorMessage
-    }
+    /*Validate the arrive and leave dates format*/ if (arriveDate.isDefined && (!arriveDate.get.matches(DatePattern))) {
+      ArriveDateErrorMessage
+    } else if (leaveDate.isDefined && (!leaveDate.get.matches(DatePattern))) {
+      LeaveDateErrorMessage
+    } else
 
     /*Validate the capacity/hosts*/
-    if(capacity != null && (capacity <= 0 || capacity > 5)) {
-      return CapacityErrorMessage
-    }
+    if (capacity.isDefined && (capacity.get <= 0 || capacity.get > 5)) {
+      CapacityErrorMessage
+    } else
 
     /*Validate the room type*/
-    if(roomType != null && (!roomType.equals("L") && !roomType.equals("S"))) {
-      return RoomTypeErrorMessage
-    }
+    if (roomType.isDefined && (!roomType.get.equals("L") && !roomType.get.equals("S"))) {
+      RoomTypeErrorMessage
+    } else
 
     /*Check that arrive date is before the leave date*/
-    if(arriveDate.replace("-","").toInt > leaveDate.replace("-","").toInt) {
-      return InvalidDateMessage
-    }
+    if (arriveDate.get.replace("-", "").toInt > leaveDate.get.replace("-", "").toInt) {
+      InvalidDateMessage
+    } else
 
     /*Check that capacity of the room matches with the beds distribution*/
-    if((simpleBeds != null && doubleBeds != null) && (capacity != (simpleBeds + (doubleBeds * 2)))) {
-      return BedsErrorMessage
+    if ((simpleBeds.isDefined && doubleBeds.isDefined) && (capacity.get != (simpleBeds.get + (doubleBeds.get * 2)))) {
+      BedsErrorMessage
+    } else {
+      /*There are not errors in the validation*/
+      NoErrorMessage
     }
-
-    /*There are not errors in the validation*/
-    NoErrorMessage
   }
 }

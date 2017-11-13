@@ -3,7 +3,6 @@ package models
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.mongodb.scala.bson.codecs.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.{MongoClient, MongoCollection, MongoDatabase}
-
 import scala.reflect.ClassTag
 
 /**
@@ -39,17 +38,17 @@ object DBHandler {
     * @return MongoCollection associated with the model class
     */
   def getCollection [T: ClassTag]: MongoCollection[T]= {
-    var collectionName : String = null
+    var collectionName : Option[String] = None
     val tClass = implicitly[ClassTag[T]].runtimeClass
     tClass.getSimpleName match {
-      case "Reservation" => collectionName = Reservation.COLLECTION_NAME
+      case "Reservation" => collectionName = Some(Reservation.COLLECTION_NAME)
 
-      case "Room" => collectionName = Room.COLLECTION_NAME
+      case "Room" => collectionName = Some(Room.COLLECTION_NAME)
 
-      case "Hotel" => collectionName = Hotel.COLLECTION_NAME
+      case "Hotel" => collectionName = Some(Hotel.COLLECTION_NAME)
     }
     getConnection()
-    database.getCollection(collectionName)
+    database.getCollection(collectionName.get)
   }
 
 
