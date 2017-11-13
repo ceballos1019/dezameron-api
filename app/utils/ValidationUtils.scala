@@ -39,37 +39,47 @@ object ValidationUtils {
     /*TODO: Check if the params can be null before invoke this method*/
 
     /*Validate the city code if it is not null*/
-    if (cityCode.isDefined && (!cityCode.get.equals("05001") && !cityCode.get.equals("11001"))) {
-      CityErrorMessage
-    } else
+    val city = cityCode.getOrElse("NO_CITY")
+    if (!city.equals("NO_CITY") && (!city.equals("05001") && !city.equals("11001"))) {
+      return CityErrorMessage
+    }
 
-    /*Validate the arrive and leave dates format*/ if (arriveDate.isDefined && (!arriveDate.get.matches(DatePattern))) {
-      ArriveDateErrorMessage
-    } else if (leaveDate.isDefined && (!leaveDate.get.matches(DatePattern))) {
-      LeaveDateErrorMessage
-    } else
+    /*Validate the arrive and leave dates format*/
+    val arrive = arriveDate.getOrElse("NO_ARRIVE_DATE")
+    if (!arrive.equals("NO_ARRIVE_DATE") && (!arrive.matches(DatePattern))) {
+      return ArriveDateErrorMessage
+    }
 
-    /*Validate the capacity/hosts*/
-    if (capacity.isDefined && (capacity.get <= 0 || capacity.get > 5)) {
-      CapacityErrorMessage
-    } else
-
-    /*Validate the room type*/
-    if (roomType.isDefined && (!roomType.get.equals("L") && !roomType.get.equals("S"))) {
-      RoomTypeErrorMessage
-    } else
+    val leave = leaveDate.getOrElse("NO_LEAVE_DATE")
+    if (!leave.equals("NO_LEAVE_DATE") && (!leave.matches(DatePattern))) {
+      return LeaveDateErrorMessage
+    }
 
     /*Check that arrive date is before the leave date*/
-    if (arriveDate.get.replace("-", "").toInt > leaveDate.get.replace("-", "").toInt) {
-      InvalidDateMessage
-    } else
+    if (arrive.replace("-", "").toInt > leave.replace("-", "").toInt) {
+      return InvalidDateMessage
+    }
+
+    /*Validate the capacity/hosts*/
+    val hosts: Integer = capacity.getOrElse(-1)
+    if (hosts != -1 && (hosts <= 0 || hosts > 5)) {
+      return CapacityErrorMessage
+    }
+
+    /*Validate the room type*/
+    val room = roomType.getOrElse("NO_ROOM_TYPE")
+    if (!room.equals("NO_ROOM_TYPE") && (!room.equals("L") && !room.equals("S"))) {
+      return RoomTypeErrorMessage
+    }
 
     /*Check that capacity of the room matches with the beds distribution*/
-    if ((simpleBeds.isDefined && doubleBeds.isDefined) && (capacity.get != (simpleBeds.get + (doubleBeds.get * 2)))) {
-      BedsErrorMessage
-    } else {
-      /*There are not errors in the validation*/
-      NoErrorMessage
+    val simple: Integer = simpleBeds.getOrElse(-1)
+    val double: Integer = doubleBeds.getOrElse(-1)
+    if ((simple != -1 && double != -1) && hosts != (simple + (double * 2))) {
+      return BedsErrorMessage
     }
+
+    /*There are not errors in the validation*/
+    NoErrorMessage
   }
 }
