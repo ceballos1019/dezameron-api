@@ -1,5 +1,6 @@
 package controllers
 
+import models.Bed
 import org.scalatest.Matchers
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
@@ -401,6 +402,16 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
       (contentAsJson(reserve) \ "description").as[String] mustBe validationMessage
+    }
+  }
+
+  "checkRoom" should{
+    "return a boolean" in{
+      val beds= new Bed(0,2)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("2","L",beds)
+      room mustBe true
+
     }
   }
 }
