@@ -1,5 +1,7 @@
 package controllers
 
+import java.security.cert.PKIXRevocationChecker.Option
+
 import models.Bed
 import org.scalatest.Matchers
 import org.scalatestplus.play._
@@ -412,6 +414,14 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val room = controller.checkRoom("2","L",beds)
       room mustBe true
 
+    }
+  }
+  "generateCode" should{
+    "return a option [String]" in{
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      code.toString() mustBe startWith ("RDZM1LS1D020171116K")
     }
   }
 }
