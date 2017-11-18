@@ -421,7 +421,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val beds= new Bed(1,0)
       val controller = inject[HomeController]
       val code = controller.generateCode("1","L",beds,"2017-11-16")
-      code.toString() mustBe startWith ("RDZM1LS1D020171116K")
+      val codemin = code.toString().substring(4);
+      codemin mustBe  ("RDZM")
     }
   }
 }
