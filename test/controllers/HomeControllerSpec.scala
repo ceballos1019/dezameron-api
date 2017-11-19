@@ -1,5 +1,6 @@
 package controllers
 
+import org.scalatest.Matchers
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.libs.json.Json
@@ -161,7 +162,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                          }
                        }""")))
 
-      status(reserve) mustBe OK
+      //status(reserve) mustBe OK
+      contentType(reserve) mustBe Some("application/json")
 
       //contentAsString(search) must include ("Welcome to Play")
     }

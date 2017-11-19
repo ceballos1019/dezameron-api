@@ -2,6 +2,7 @@ package utils
 
 /**
   * Class to handle the format validations for the services
+  *
   * @author Andrés Ceballos Sánchez - andres.ceballoss@udea.edu.co
   * @version 1.0.0
   * @since 6/11/2017
@@ -23,49 +24,58 @@ object ValidationUtils {
 
   /**
     * Validate the params that are not null
-    * @param cityCode - 05001 and 11001 are the valid codes
+    *
+    * @param cityCode   - 05001 and 11001 are the valid codes
     * @param arriveDate - date must be in the format YYYY-MM-dd
-    * @param leaveDate - date must be in the format YYYY-MM-dd
-    * @param capacity - value between 0 and 5
-    * @param roomType - "L" or "S"
+    * @param leaveDate  - date must be in the format YYYY-MM-dd
+    * @param capacity   - value between 0 and 5
+    * @param roomType   - "L" or "S"
     * @param simpleBeds - number of simple beds
     * @param doubleBeds - number of double beds
     * @return Message with the error. If there is not an error return NoErrorMessage
     */
-  def validate(cityCode: String, arriveDate: String, leaveDate: String, capacity: Integer, roomType: String,
-              simpleBeds: Integer, doubleBeds: Integer): String = {
+  def validate(cityCode: Option[String], arriveDate: Option[String], leaveDate: Option[String], capacity: Option[Integer],
+               roomType: Option[String], simpleBeds: Option[Integer], doubleBeds: Option[Integer]): String = {
     /*TODO: Check if the params can be null before invoke this method*/
 
     /*Validate the city code if it is not null*/
-    if(cityCode != null && (!cityCode.equals("05001") && !cityCode.equals("11001"))) {
+    val city = cityCode.getOrElse("NO_CITY")
+    if (!city.equals("NO_CITY") && (!city.equals("05001") && !city.equals("11001"))) {
       return CityErrorMessage
     }
 
     /*Validate the arrive and leave dates format*/
-    if(arriveDate != null && (!arriveDate.matches(DatePattern))) {
+    val arrive = arriveDate.getOrElse("NO_ARRIVE_DATE")
+    if (!arrive.equals("NO_ARRIVE_DATE") && (!arrive.matches(DatePattern))) {
       return ArriveDateErrorMessage
     }
-    if(leaveDate != null && (!leaveDate.matches(DatePattern))) {
+
+    val leave = leaveDate.getOrElse("NO_LEAVE_DATE")
+    if (!leave.equals("NO_LEAVE_DATE") && (!leave.matches(DatePattern))) {
       return LeaveDateErrorMessage
     }
 
+    /*Check that arrive date is before the leave date*/
+    if (arrive.replace("-", "").toInt > leave.replace("-", "").toInt) {
+      return InvalidDateMessage
+    }
+
     /*Validate the capacity/hosts*/
-    if(capacity != null && (capacity <= 0 || capacity > 5)) {
+    val hosts: Integer = capacity.getOrElse(-1)
+    if (hosts != -1 && (hosts <= 0 || hosts > 5)) {
       return CapacityErrorMessage
     }
 
     /*Validate the room type*/
-    if(roomType != null && (!roomType.equals("L") && !roomType.equals("S"))) {
+    val room = roomType.getOrElse("NO_ROOM_TYPE")
+    if (!room.equals("NO_ROOM_TYPE") && (!room.equals("L") && !room.equals("S"))) {
       return RoomTypeErrorMessage
     }
 
-    /*Check that arrive date is before the leave date*/
-    if(arriveDate.replace("-","").toInt > leaveDate.replace("-","").toInt) {
-      return InvalidDateMessage
-    }
-
     /*Check that capacity of the room matches with the beds distribution*/
-    if((simpleBeds != null && doubleBeds != null) && (capacity != (simpleBeds + (doubleBeds * 2)))) {
+    val simple: Integer = simpleBeds.getOrElse(-1)
+    val double: Integer = doubleBeds.getOrElse(-1)
+    if ((simple != -1 && double != -1) && hosts != (simple + (double * 2))) {
       return BedsErrorMessage
     }
 
