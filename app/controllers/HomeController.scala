@@ -124,17 +124,22 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       BadRequest(Json.toJson(
         Map("message" -> ReservationErrorMessage)
       ))
-    }else{
-      var reservation:Reservation = reservations.find(equal("reservation_id", reservation_id)).headResult()
-
-      if((!(reservation.status.equals(Some("A")))) && (!(reservation.status.equals(Some("a"))))) {
+    }else {
+      var reservation: Reservation = reservations.find(equal("reservation_id", reservation_id)).headResult()
+      if (reservation != null) {
+      if ((!Some("A").equals(reservation.status)) && (!Some("a").equals(reservation.status))) {
         println(reservation.status)
         BadRequest(Json.toJson(
           Map("message" -> "The status of your reserve is not aproved")
         ))
-      }else{
-        reservations.updateOne(equal("reservation_id",reservation_id),set("status","C")).headResult()
+      } else {
+        reservations.updateOne(equal("reservation_id", reservation_id), set("status", "C")).headResult()
         Ok("Your reservation was cancel")
+      }
+    }else{
+        BadRequest(Json.toJson(
+          Map("message" -> "This reserve doesn´t exist")
+        ))
       }
         }
   }
