@@ -7,7 +7,8 @@ import models._
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
-import play.api.libs.json.Json
+import org.mongodb.scala.model.Updates._
+import play.api.libs.json.{JsError, JsResult, JsSuccess, Json}
 import play.api.mvc._
 import utils.ValidationUtils
 
@@ -116,23 +117,20 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
       }
   }
-  //http://localhost:9000/v1/rooms/cancelReservation
-  def cancelReservation() = Action { implicit request =>
+  //http://localhost:9000/v1/reservation/cancel?reservation_id=RDZM1LS1D020171123K1520654374
+  def cancelReservation(reservation_id: String) = Action { implicit request =>
     /*Check if the request has body*/
-    if(request.hasBody) {
-      val bodyAsJson = request.body.asJson.get
-      val reservation_id: JsResult[String] = (bodyAsJson \ "reservation_id").validate[String]
-      reservation_id match {
-        case s: JsSuccess[String] => {
-          reservations.deleteOne(equal("reservation_id", s.get))
+    val ReservationErrorMessage = "Invalid id code"
+    if(reservation_id != null && !reservation_id.startsWith("RDZM")){
+      BadRequest(Json.toJson(
+        Map("message" -> ReservationErrorMessage)
+      ))
+    }else{
+          reservations.updateOne(equal("reservation_id", reservation_id),set("reservation_id", "RDZMchange")).printHeadResult()
           Ok("Your cancelation was done")
         }
-        case e: JsError => Ok("Errors: " + JsError.toJson(e).toString())
-      }
-      } else{
-      Ok("was a problem with your cancelation")
   }
-  }
+
 
   /**
     * Create an Action to render an HTML page.
