@@ -1,24 +1,19 @@
 package controllers
 
-import java.util.NoSuchElementException
 import javax.inject._
 
-import models.{Bed, Hotel, Reservation, Room}
-import models.Hotel.hotels
-import models.Room.rooms
-import models.Reservation.reservations
-import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase, Observer}
-import play.api._
-import play.api.libs.json._
-
-import scala.util.control.Breaks
-import play.api.mvc._
 import models.Helpers._
+import models._
+import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
+import play.api.libs.json.Json
+import play.api.mvc._
+import utils.ValidationUtils
 
 import scala.concurrent.Future
 import scala.util.Random
+import scala.util.control.Breaks
 /**
   * This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -26,45 +21,27 @@ import scala.util.Random
 @Singleton
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc)
 {
+  /*TODO: Test when insert one document, these variables refresh automatically with that document*/
+  lazy val hotels : MongoCollection[Hotel] = DBHandler.getCollection[Hotel]
+  lazy val rooms : MongoCollection[Room] = DBHandler.getCollection[Room]
+  lazy val reservations : MongoCollection[Reservation] = DBHandler.getCollection[Reservation]
 
-  var beds = Bed(1,2)
-  def test = Action{
-    Ok(Json.toJson(reservations.find().results()))
+    def test = Action{
+    val database : MongoCollection[Reservation]  = DBHandler.getCollection[Reservation]
+    //k(Json.toJson(reservations.find().results()))
+    Ok(Json.toJson(database.find().results()))
   }
 
   //http://localhost:9000/v1/rooms?arrive_date=2017-02-20&leave_date=2017-03-15&city=11001&hosts=2&room_type=L
   def search(arrive_date: String, leave_date: String, city:String,
              hosts: Int, room_type:String)  =
     Action{
-      if(!city.equals("05001") && !city.equals("11001"))
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Invalid city code")))
-        }
-      else if(hosts <= 0 || hosts > 5 )
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Hosts must be between 1 and 5")))
-        }
-      else if(!room_type.equals("L") && !room_type.equals("S"))
-        {
-          BadRequest(Json.toJson(
-            Map("message" -> "Invalid room type")))
-        }
-      else if(!arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
+      val messageValidation = ValidationUtils.validate(city, arrive_date, leave_date,hosts, room_type, null, null)
+      if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
         BadRequest(Json.toJson(
-          Map("message" -> "Invalid arrive date")))
-      }
-      else if(!leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")){
-        BadRequest(Json.toJson(
-          Map("message" -> "Invalid leave date")))
-      }
-      else if(arrive_date.replace("-","").toInt > leave_date.replace("-","").toInt)
-      {
-        BadRequest(Json.toJson(
-          Map("message" -> "Leave date must be greater than arrive date")))
-      }
-      else {
+          Map("message" -> messageValidation)
+        ))
+      } else {
         val reserved_rooms = checkDates(arrive_date, leave_date, city, room_type)
         val hotel = hotels.find(equal("city", city)).projection(exclude("_id", "city")).headResult();
 
@@ -77,7 +54,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           && x.beds.double == reserved.beds.double)
         }
 
-        var json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
+        val json_res = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
           hotel.check_in, hotel.check_out, hotel.hotel_website, rooms_res)
 
         Ok(Json.toJson(json_res))
@@ -92,26 +69,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         bodyAsJson.validate[Reservation].fold(
           /*Succesful*/
           valid = response => {
-            if(response.capacity <= 0 || response.capacity > 5) {
+            val messageValidation = ValidationUtils.validate(null, response.arrive_date, response.leave_date,
+              response.capacity, response.room_type, response.beds.simple, response.beds.double)
+            if(!ValidationUtils.NoErrorMessage.equals(messageValidation)){
               BadRequest(Json.toJson(
-                Map("message" -> "Hosts must be between 1 and 5")))
-            } else if(!response.room_type.equals("L") && !response.room_type.equals("S")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid room type")))
-            } else if(!response.arrive_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid arrive date")))
-            } else if(!response.leave_date.matches("[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[0-1])")) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Invalid leave date")))
-            } else if(response.arrive_date.replace("-","").toInt > response.leave_date.replace("-","").toInt) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Leave date must be greater than arrive date")))
-            } else if(response.capacity != (response.beds.simple + (response.beds.double*2))) {
-              BadRequest(Json.toJson(
-                Map("message" -> "Beds number does not match with room capacity")))
-            }
-            else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
+                Map("message" -> messageValidation)
+              ))
+            } else if(checkRoom(response.hotel_id, response.room_type, response.beds)) {
               val city = response.hotel_id match{
                 case "1" => "05001"
                 case "2" => "11001"
@@ -179,6 +143,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     */
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())
+  }
+
+  def getReservations() = Action {
+    Ok("test reservations")
   }
 
   def checkRoom(hotel_id: String, room_type: String, beds: Bed): Boolean = {
