@@ -130,11 +130,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       if ((!Some("A").equals(reservation.status)) && (!Some("a").equals(reservation.status))) {
         println(reservation.status)
         BadRequest(Json.toJson(
-          Map("message" -> "The status of your reserve is not aproved")
+          Map("message" -> "The status of your reserve is not approved")
         ))
       } else {
         reservations.updateOne(equal("reservation_id", reservation_id), set("status", "C")).headResult()
-        Ok("Your reservation was cancel")
+        Ok(Json.toJson(
+          Map("message" -> "Your reservation was successfully canceled!!")
+        ))
       }
     }else{
         BadRequest(Json.toJson(
