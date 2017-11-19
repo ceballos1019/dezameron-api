@@ -8,12 +8,8 @@ import models._
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
-<<<<<<< HEAD
 import org.mongodb.scala.model.Updates._
-import play.api.libs.json.{JsError, JsResult, JsSuccess, Json}
-=======
-import play.api.libs.json.{JsValue, Json}
->>>>>>> bf89a68ea0d34c6932faa9716703a8499387504a
+import play.api.libs.json.{JsError, JsResult, JsSuccess, Json, JsValue}
 import play.api.mvc._
 import utils.ValidationUtils
 
@@ -120,7 +116,6 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
     }
   }
-<<<<<<< HEAD
   //http://localhost:9000/v1/reservation/cancel?reservation_id=RDZM1LS1D020171123K1520654374
   def cancelReservation(reservation_id: String) = Action { implicit request =>
     /*Check if the request has body*/
@@ -144,8 +139,6 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         }
   }
 
-=======
->>>>>>> bf89a68ea0d34c6932faa9716703a8499387504a
 
   /**
     * Create an Action to render an HTML page.
