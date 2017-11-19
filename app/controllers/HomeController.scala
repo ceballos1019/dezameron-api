@@ -126,8 +126,17 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         Map("message" -> ReservationErrorMessage)
       ))
     }else{
-          reservations.updateOne(equal("reservation_id", reservation_id),set("reservation_id", "RDZMchange")).printHeadResult()
-          Ok("Your cancelation was done")
+      var reservation:Reservation = reservations.find(equal("reservation_id", reservation_id)).headResult()
+
+      if((!(reservation.status.equals(Some("A")))) && (!(reservation.status.equals(Some("a"))))) {
+        println(reservation.status)
+        BadRequest(Json.toJson(
+          Map("message" -> "The status of your reserve is not aproved")
+        ))
+      }else{
+        reservations.updateOne(equal("reservation_id",reservation_id),set("status","C")).headResult()
+        Ok("Your reservation was cancel")
+      }
         }
   }
 
