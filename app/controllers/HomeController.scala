@@ -95,6 +95,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                   ))
                 } else {
                   response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
+                  response.state = Some("A")
                   reservations.insertOne(response).headResult()
                   Ok(Json.toJson(
                     Map("reservation_id" -> response.reservation_id)))
@@ -127,8 +128,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     }else {
       var reservation: Reservation = reservations.find(equal("reservation_id", reservation_id)).headResult()
       if (reservation != null) {
-      if ((!Some("A").equals(reservation.status)) && (!Some("a").equals(reservation.status))) {
-        println(reservation.status)
+      if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
         BadRequest(Json.toJson(
           Map("message" -> "The status of your reserve is not approved")
         ))
