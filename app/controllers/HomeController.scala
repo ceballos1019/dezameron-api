@@ -174,8 +174,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   /**
     * Token authentication
     */
-  def token = Action { implicit request =>
+  /*def token = Action { implicit request =>
     Ok(views.html.index(s"Hello ${request.user.firstName} ${request.user.lastName}"))
-  }
-
+  }*/
 }

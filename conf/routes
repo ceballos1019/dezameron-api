@@ -6,7 +6,6 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 GET     /test                       controllers.HomeController.test
-GET     /token                      controllers.HomeController.token
 GET    /v1/rooms                    controllers.HomeController.search(arrive_date: String, leave_date: String, city:String,hosts: Int, room_type:String)
 POST   /v1/rooms/reserve            controllers.HomeController.reserve
 GET    /v1/reservations             controllers.HomeController.getReservations(email: String)
