@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 
+import com.google.firebase.auth.{FirebaseAuth, FirebaseToken}
 import models.Helpers._
 import models._
 import org.mongodb.scala.MongoCollection
@@ -169,6 +170,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       x.leave_date.replace("-","").toInt >= new_leave))
 
     reservation_list
+  }
+
+  def verifyFirebaseToken(idToken:String) = {
+    val decodedToken:FirebaseToken = FirebaseAuth.getInstance().verifyIdToken(idToken).getResult();
+    val uid:String = decodedToken.getUid();
   }
 
   /**
