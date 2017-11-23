@@ -28,11 +28,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
   def test = Action {
     val database: MongoCollection[Reservation] = DBHandler.getCollection[Reservation]
-    //k(Json.toJson(reservations.find().results()))
     Ok(Json.toJson(database.find().results()))
   }
 
-  //http://localhost:9000/v1/rooms?arrive_date=2017-02-20&leave_date=2017-03-15&city=11001&hosts=2&room_type=L
+
   def search(arriveDate: String, leaveDate: String, city: String,
              hosts: Int, roomType: String) =
     Action {

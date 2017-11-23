@@ -8,6 +8,7 @@ import play.api.libs.json.{Json, Reads, Writes}
 case class User(doc_type: String, doc_id: String, email: String, phone_number: String)
 
 object User{
+  /*Codec for User class*/
 
   val codecUser: CodecRegistry  = fromRegistries(fromProviders(classOf[User]))
 
