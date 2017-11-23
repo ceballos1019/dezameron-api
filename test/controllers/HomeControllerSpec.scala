@@ -408,21 +408,27 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
   }
 
   "checkRoom" should{
-    "return a boolean" in{
+    "return a true boolean" in{
       val beds= new Bed(0,2)
       val controller = inject[HomeController]
       val room = controller.checkRoom("2","L",beds)
       room mustBe true
-
+    }
+    "return a false boolean" in {
+      val beds= new Bed (0.1)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("1","S",beds)
+      room mustBe false
     }
   }
-  "generateCode" should{
+  /*"generateCode" should{
     "return a option [String]" in{
       val beds= new Bed(1,0)
       val controller = inject[HomeController]
       val code = controller.generateCode("1","L",beds,"2017-11-16")
-      val codemin = code.toString().substring(4);
-      codemin mustBe  ("RDZM")
+      val codemin = code.toString().substring(0,4)
+      println(codemin)
+      codemin mustBe ("RDZM")
     }
-  }
+  }*/
 }
