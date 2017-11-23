@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.FileInputStream
+import java.io.{FileInputStream, InputStream}
 import javax.inject._
 
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
@@ -176,7 +176,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   }
 
   def verifyFirebaseToken(idToken:String) = Action {
-     val credentials:FileInputStream = new FileInputStream("/home/camilo/Workspace/dezameron-api/dezameron.json");
+    val credentials: InputStream = getClass.getResourceAsStream("/dezameron.json");
     if(credentials == null)
       Ok("Nothing...")
     else {
@@ -198,7 +198,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         }
 
       val user_id = decodedToken.getResult
-      Ok(s"Loca ${user_id.getEmail}")
+      Ok(s"Loca ${user_id.getUid}")
     }
   }
 
