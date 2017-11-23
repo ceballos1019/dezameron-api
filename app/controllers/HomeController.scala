@@ -13,7 +13,7 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
 import play.api.libs.json.Json
 import play.api.mvc._
-import utils.ValidationUtils
+import utils.{Firebase, ValidationUtils}
 
 import scala.util.Random
 import scala.util.control.Breaks
@@ -175,20 +175,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     reservation_list
   }
 
-  def verifyFirebaseToken(idToken:String) = Action {
-    val credentials: InputStream = getClass.getResourceAsStream("/dezameron.json");
-
-    val options = new FirebaseOptions.Builder()
-      .setServiceAccount(credentials)
-      .setDatabaseUrl("https://dezameron.firebaseio.com")
-      .build();
-    FirebaseApp.initializeApp(options);
-
-    val decodedToken = Tasks.await(
-      FirebaseAuth.getInstance().verifyIdToken(idToken));
-
-      Ok(s"See the user_id papo: ${decodedToken.getUid}")
-    }
-
-
+  def verifyFirebaseToken(token:String) = Action {
+    /*El método 'verifyToken' devuelve el user_id correspondiente al token*/
+    val user_id = Firebase.verifyToken(token);
+    Ok(s"See the user_id papo: ${user_id}")
+  }
 }
