@@ -1,8 +1,11 @@
 package controllers
 
+import java.io.FileInputStream
 import javax.inject._
 
+import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.google.firebase.auth.{FirebaseAuth, FirebaseToken}
+import com.google.firebase.tasks.{OnSuccessListener, Task}
 import models.Helpers._
 import models._
 import org.mongodb.scala.MongoCollection
@@ -172,15 +175,31 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     reservation_list
   }
 
-  def verifyFirebaseToken(idToken:String) = {
-    val decodedToken:FirebaseToken = FirebaseAuth.getInstance().verifyIdToken(idToken).getResult();
-    val uid:String = decodedToken.getUid();
+  def verifyFirebaseToken(idToken:String) = Action {
+     val credentials:FileInputStream = new FileInputStream("/home/camilo/Workspace/dezameron-api/dezameron.json");
+    if(credentials == null)
+      Ok("Nothing...")
+    else {
+      val options = new FirebaseOptions.Builder()
+        .setServiceAccount(credentials)
+        .setDatabaseUrl("https://dezameron.firebaseio.com")
+        .build();
+       FirebaseApp.initializeApp(options);
+      val decodedToken: Task[FirebaseToken] = FirebaseAuth.getInstance.verifyIdToken(idToken).
+        addOnSuccessListener(new OnSuccessListener[FirebaseToken] {
+          override def onSuccess(tResult: FirebaseToken): Unit ={
+          val uid: String = tResult.getUid
+          }
+        })
+
+      while (!decodedToken.isComplete && !decodedToken.isSuccessful)
+        {
+          print("nothing...")
+        }
+
+      val user_id = decodedToken.getResult
+      Ok(s"Loca ${user_id.getEmail}")
+    }
   }
 
-  /**
-    * Token authentication
-    */
-  /*def token = Action { implicit request =>
-    Ok(views.html.index(s"Hello ${request.user.firstName} ${request.user.lastName}"))
-  }*/
 }

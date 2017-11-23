@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "dezameron",
+  "private_key_id": "67f76c73de559f8c0f2f0832c9413252419cc4f7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCznsaZ4kQ1hZXD\n7a3YHZ1WJbTo9gCzzWxtkI+5c+UAGLsSkk1KYE5/VTyGqzYwH829Xh02K0vtcD1I\nHMD7JNCm3yrbJD7tlpKF/Gf3wsGYl/l0pl/BmSE0WAtjyv9CqixV5ceAC/SfdYDH\nLLj0XD8KGaNTYSr1gscXcWL3Bw8qHlu/OswA1SAA/YREcWRQyQ/IemvhT4Tk4Q6p\nmppdo0cMc5hmzEFjmoLdQslK/IHXHZUaLWcc8J092f/zL/CSzRY84+mJ70RZmT8h\nSRwO39UzRXgFxuEd9eho9uzqdvJDwmoFKAYpRQuW+LFCBU18yCNcYmvarzPb/ttl\npFSgHcB3AgMBAAECggEAGXj01THfVm/BU23Lb5CTlXn3c+ofI2CIdelAWJ505VSc\ngv+4cknCGBCwarCxGJYKCUblgZ8WP2/hYO6i93q7FE8ltronKm5mDRZEcEBwUAGN\nYNuPTNc4fEHYK6jIFl4nt27EogYQBOUXBCf1esHyNq54GQT4oKSRM2PjEwEvR1uV\n9DpJXZ4SepJFrtZdNqaEsTQ7t8QZwhUfVwbqk8sEhy3bAfONzd8OMJYaJ8N4v6WZ\nEEMqX4eM3+93uBeoPCwiWjCgRyTDji+Mg49erjcCNGx3BDufubmmxkfaP985N6Zo\nyOdpxx+9hVSZgzcc7ONznyuaG8E1NP/FgV+tjOJDAQKBgQDb7JXGbs/ZeOCPINAf\naIG3zGyeKPE7K/MIzIP3E/iT3wIeT9CiW9PDwyEoh1UvpAJ5W/lnIe68aFcYAV6v\nsabk5nwg9inldSe/pHePE3PWdYsLokOFFO60nppQB3AsrvKxVyFsHTXrq2UpVkWv\nBj7Vuc7wGNN14hgH00OJtid3wQKBgQDRFa6CIUSuP0OtqGTVtYx/tizZO98Zkbyt\nxY7ooCsMlQAnL4mJugWL7xk75kKMdAvwcla+Z7NdZ7V8ztpViuycJZG/qLs3CWC7\nSLUQGylvhko4zlBK+bsAAiZj7pwWwkU3BLscUYo7RSXvYjp22pFxQr36JlwvEZ5C\ni5HL8fSGNwKBgCbDETbzSwEalAHGF8ihY9OgXTiXIMV8Ho7bdRr0UyjE8pujF7O2\nGaH0X4DEMZh/AMyhEFlEGs7sWQVrIGQ5HKBVm2U33fSKbKITe9sk45LWDtbTF7F6\nGgSNu8cFOJk3kKD/KW3jzCAoimD5yrhpkmObJ0UcKxEo83FVpB6+k0BBAoGAM8Qs\neqeF+6ZKOVqx7H+Qk6YlIHvEVu5QSq3ZHhtZzTmu2gTZBrJ54RWHp97wpxmsQxHs\nDCRcskmVE5ubTwagYmCi31MFVzEJNBViTuSKs8QJ6FqcYpPGCtB9dMyE9NWQkXio\nYvCFSvtp0wT8+KRQ0jv2EVMiC71O86beqCH1qq0CgYB8w9n2DnhPY3eiZQB9Rbb3\n57iKIQUPFp2nT2lTydR5so/iooGqpdLkwgb7wA0iqfnXiLahjY47/MWYiCWVWFEb\nWffzZQGbKcQMeZcOZEwFpVbgKJ3z7CH1g/+afwyiUt8i7HCvQYiP6hly5fW0rKd9\nnsBdo2Rbz/d2APxmhhbZDw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "dezameron@dezameron.iam.gserviceaccount.com",
+  "client_id": "114760710901310584220",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dezameron%40dezameron.iam.gserviceaccount.com"
+}
