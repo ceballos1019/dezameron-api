@@ -1,9 +1,6 @@
 package controllers
 
-import java.security.cert.PKIXRevocationChecker.Option
-
 import models.Bed
-import org.scalatest.Matchers
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.libs.json.Json
@@ -168,7 +165,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       //status(reserve) mustBe OK
       contentType(reserve) mustBe Some("application/json")
 
-      //contentAsString(search) must include ("Welcome to Play")
+
     }
 
     "reserve return a json" in {
@@ -206,6 +203,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -234,6 +232,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -262,6 +261,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -291,6 +291,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -319,6 +320,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
