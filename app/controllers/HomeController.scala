@@ -5,7 +5,7 @@ import javax.inject._
 
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.google.firebase.auth.{FirebaseAuth, FirebaseToken}
-import com.google.firebase.tasks.{OnSuccessListener, Task}
+import com.google.firebase.tasks.{OnSuccessListener, Task, Tasks}
 import models.Helpers._
 import models._
 import org.mongodb.scala.MongoCollection
@@ -177,29 +177,18 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
   def verifyFirebaseToken(idToken:String) = Action {
     val credentials: InputStream = getClass.getResourceAsStream("/dezameron.json");
-    if(credentials == null)
-      Ok("Nothing...")
-    else {
-      val options = new FirebaseOptions.Builder()
-        .setServiceAccount(credentials)
-        .setDatabaseUrl("https://dezameron.firebaseio.com")
-        .build();
-       FirebaseApp.initializeApp(options);
-      val decodedToken: Task[FirebaseToken] = FirebaseAuth.getInstance.verifyIdToken(idToken).
-        addOnSuccessListener(new OnSuccessListener[FirebaseToken] {
-          override def onSuccess(tResult: FirebaseToken): Unit ={
-          val uid: String = tResult.getUid
-          }
-        })
 
-      while (!decodedToken.isComplete && !decodedToken.isSuccessful)
-        {
-          print("nothing...")
-        }
+    val options = new FirebaseOptions.Builder()
+      .setServiceAccount(credentials)
+      .setDatabaseUrl("https://dezameron.firebaseio.com")
+      .build();
+    FirebaseApp.initializeApp(options);
 
-      val user_id = decodedToken.getResult
-      Ok(s"Loca ${user_id.getUid}")
+    val decodedToken = Tasks.await(
+      FirebaseAuth.getInstance().verifyIdToken(idToken));
+
+      Ok(s"See the user_id papo: ${decodedToken.getUid}")
     }
-  }
+
 
 }
