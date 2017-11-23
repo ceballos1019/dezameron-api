@@ -175,9 +175,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     reservation_list
   }
 
-  def verifyFirebaseToken(token:String) = Action {
-    /*El método 'verifyToken' devuelve el user_id correspondiente al token*/
-    val user_id = Firebase.verifyToken(token);
-    Ok(s"See the user_id papo: ${user_id}")
+  def verifyFirebaseToken() = Action { implicit request =>
+    val token:Option[String] = request.headers.get("Authorization");
+    /*El método 'verifyToken' devuelve el user_id correspondiente al token
+    * en caso de éxito, en caso contrario devuelve un mensaje de error*/
+    val res = Firebase.verifyToken(token);
+    Ok(s"${res}")
   }
 }

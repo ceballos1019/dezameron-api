@@ -2,9 +2,11 @@ package utils
 
 import java.io.InputStream
 
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.{FirebaseAuth, FirebaseAuthException}
 import com.google.firebase.tasks.Tasks
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import jdk.nashorn.internal.codegen.CompilationException
+import play.api.PlayException
 
 case class FirebaseException(s:String)
 
@@ -17,10 +19,22 @@ object Firebase {
     .build();
   FirebaseApp.initializeApp(options);
 
-  def verifyToken(idToken:String):String ={
-  val decodedToken = Tasks.await(
-    FirebaseAuth.getInstance().verifyIdToken(idToken));
-    decodedToken.getUid
+  def verifyToken(idToken:Option[String]):String ={
+    idToken match {
+      case Some(idToken) =>
+          try {
+
+            var token = idToken.filterNot((x: Char) => x.isWhitespace)
+            token = token.replaceAll("Bearer","")
+            val decodedToken = Tasks.await (
+            FirebaseAuth.getInstance ().verifyIdToken (token));
+            decodedToken.getUid
+
+          } catch {
+            case e: Exception => "Token has expired or is not valid"
+          }
+      case None => "Authorization header is empty"
+    }
   }
 
 }
