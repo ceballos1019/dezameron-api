@@ -155,10 +155,17 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
               Map("message" -> "The status of your reserve is not approved")
             ))
           } else {
-            reservations.updateOne(equal("reserve_id", reserve_id), set("state", "C")).headResult()
-            Ok(Json.toJson(
-              Map("message" -> "Your reservation was successfully canceled!!")
-            ))
+            val reserve = reservations.find(equal("reserve_id", reserve_id)).headResult()
+            if(res.equals(reserve.user_id.getOrElse("NO_TOKEN"))) {
+              reservations.updateOne(equal("reserve_id", reserve_id), set("state", "C")).headResult()
+              Ok(Json.toJson(
+                Map("message" -> "Your reservation was successfully canceled!!")
+              ))
+            } else {
+              BadRequest(Json.toJson(
+                Map("message" -> "You do not have authorization to do this action")
+              ))
+            }
           }
         } else {
           BadRequest(Json.toJson(
@@ -191,9 +198,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       val hotelsResponse = hotels.find().projection(exclude("_id", "city", "rooms")).results()
       val result = {
         var hotelsJson: Seq[HotelResponse] = Nil
-        var reservationsJson: Seq[ReservationResponse] = Nil
         for (hotel <- hotelsResponse) {
-          val reservationsResponse = reservations.find(equal("hotel_id", hotel.hotel_id)).results()
+          var reservationsJson: Seq[ReservationResponse] = Nil
+          val reservationsResponse = reservations.find(and(equal("hotel_id", hotel.hotel_id), equal("user_id", res))).results()
           for (reservation <- reservationsResponse) {
             val roomResponse = rooms.find(and(equal("room_type", reservation.room_type),
               equal("capacity", reservation.capacity), equal("beds.simple", reservation.beds.simple),
