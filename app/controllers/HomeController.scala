@@ -73,6 +73,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
 
   def reserve() = Action { implicit request =>
+    val token: Option[String] = request.headers.get("Authorization");
+    val res = Firebase.verifyToken(token);
+    print(res)
     /*Check if the request has body*/
     if (request.hasBody) {
       request.body.asJson match {
