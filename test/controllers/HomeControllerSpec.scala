@@ -423,13 +423,19 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       room mustBe false
     }
   }
-/* "generateCode" should{
+"generateCode" should{
     "return the first part code" in{
       val beds= new Bed(1,0)
       val controller = inject[HomeController]
       val code = controller.generateCode("1","L",beds,"2017-11-16")
-      val codemin:String = code.toString.substring(0,4)
-      (code) mustBe  startWith ("RDZM")
+      val codemin:String = code.getOrElse("ERROR")
+      codemin mustBe ("RDZM")
     }
-  }*/
+  /*  "return a static part code" in {
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      val codemin:String = code.getOrElse("ERROR").substring(0,4)
+    }*/
+  }
 }
