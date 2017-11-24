@@ -428,14 +428,22 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val beds= new Bed(1,0)
       val controller = inject[HomeController]
       val code = controller.generateCode("1","L",beds,"2017-11-16")
-      val codemin:String = code.getOrElse("ERROR")
+      val codemin:String = code.getOrElse("ERROR").substring(0,4)
       codemin mustBe ("RDZM")
     }
-  /*  "return a static part code" in {
+    "return a static part code" in {
       val beds= new Bed(1,0)
       val controller = inject[HomeController]
       val code = controller.generateCode("1","L",beds,"2017-11-16")
-      val codemin:String = code.getOrElse("ERROR").substring(0,4)
+      val codemin:String = code.getOrElse("ERROR").substring(0,19)
+      codemin mustBe ("RDZM1LS1D020171116K")
+    }
+   /* "there is no reservation code" in{
+      val beds= new Bed(0,1)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","S",beds,"2014-11-16")
+      val codemin:String = code.getOrElse("ERROR")
+      codemin mustBe ("ERROR")
     }*/
   }
 }
