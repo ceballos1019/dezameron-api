@@ -124,6 +124,10 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   //http://localhost:9000/v1/reservation/cancel?reservation_id=RDZM1LS1D020171123K1520654374
   def cancelReservation(reservation_id: String) = Action { implicit request =>
     /*Check if the request has body*/
+
+    val token: Option[String]= request.headers.get("Authorization")
+    val res = Firebase.verifyToken(token);
+    println(res);
     val ReservationErrorMessage = "Invalid id code"
     if (reservation_id != null && !reservation_id.startsWith("RDZM")) {
       BadRequest(Json.toJson(
