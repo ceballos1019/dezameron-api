@@ -73,60 +73,63 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
 
   def reserve() = Action { implicit request =>
-    val token: Option[String] = request.headers.get("Authorization");
+    val token: Option[String] = request.headers.get("Authorization")
     val res = Firebase.verifyToken(token)
-
-    /*Check if the request has body*/
-    if (request.hasBody) {
-      request.body.asJson match {
-        case Some(bodyAsJson) =>
-          bodyAsJson.validate[Reservation].fold(
-            /*Succesful*/
-            valid = response => {
-              val messageValidation = ValidationUtils.validate(None, Some(response.arrive_date), Some(response.leave_date),
-                Some(response.capacity), Some(response.room_type), Some(response.beds.simple), Some(response.beds.double))
-              if (!ValidationUtils.NoErrorMessage.equals(messageValidation)) {
-                BadRequest(Json.toJson(
-                  Map("message" -> messageValidation)
-                ))
-              } else if (checkRoom(response.hotel_id, response.room_type, response.beds)) {
-                val city = response.hotel_id match {
-                  case "1" => "05001"
-                  case "2" => "11001"
-                }
-                val reservedRooms = checkDates(response.arrive_date, response.leave_date, city, response.room_type)
-
-                /*Check if the room is reserved*/
-                val isReserved = if (reservedRooms.exists(room => room.beds.simple == response.beds.simple &&
-                  room.beds.double == response.beds.double)) true else false
-
-                if (isReserved) {
+    if(!res.equals(Firebase.TokenErrorMessage) && !res.equals(Firebase.AuthorizationErrorMessage)) {
+      /*Check if the request has body*/
+      if (request.hasBody) {
+        request.body.asJson match {
+          case Some(bodyAsJson) =>
+            bodyAsJson.validate[Reservation].fold(
+              /*Succesful*/
+              valid = response => {
+                val messageValidation = ValidationUtils.validate(None, Some(response.arrive_date), Some(response.leave_date),
+                  Some(response.capacity), Some(response.room_type), Some(response.beds.simple), Some(response.beds.double))
+                if (!ValidationUtils.NoErrorMessage.equals(messageValidation)) {
                   BadRequest(Json.toJson(
-                    Map("message" -> "The room is not available")
+                    Map("message" -> messageValidation)
                   ))
-                } else {
-                  response.reserve_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
-                  response.state = Some("A")
-                  response.user_id = Some(res)
-                  reservations.insertOne(response).headResult()
-                  Ok(Json.toJson(
-                    Map("reservation_id" -> response.reserve_id)))
-                }
-              } else {
-                BadRequest(Json.toJson(
-                  Map("message" -> "The room does not exist")
-                ))
-              }
-            },
+                } else if (checkRoom(response.hotel_id, response.room_type, response.beds)) {
+                  val city = response.hotel_id match {
+                    case "1" => "05001"
+                    case "2" => "11001"
+                  }
+                  val reservedRooms = checkDates(response.arrive_date, response.leave_date, city, response.room_type)
 
-            /*Error*/
-            invalid = error => BadRequest(Json.toJson(
-              Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
-          )
-        case None => BadRequest(Json.toJson(Map("error" -> "Bad Parameters", "description" -> "JSON is missing")))
+                  /*Check if the room is reserved*/
+                  val isReserved = if (reservedRooms.exists(room => room.beds.simple == response.beds.simple &&
+                    room.beds.double == response.beds.double)) true else false
+
+                  if (isReserved) {
+                    BadRequest(Json.toJson(
+                      Map("message" -> "The room is not available")
+                    ))
+                  } else {
+                    response.reserve_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
+                    response.state = Some("A")
+                    response.user_id = Some(res)
+                    reservations.insertOne(response).headResult()
+                    Ok(Json.toJson(
+                      Map("reservation_id" -> response.reserve_id)))
+                  }
+                } else {
+                  BadRequest(Json.toJson(
+                    Map("message" -> "The room does not exist")
+                  ))
+                }
+              },
+
+              /*Error*/
+              invalid = error => BadRequest(Json.toJson(
+                Map("error" -> "Bad Parameters", "description" -> "Missing a parameter")))
+            )
+          case None => BadRequest(Json.toJson(Map("error" -> "Bad Parameters", "description" -> "JSON is missing")))
+        }
+      } else {
+        BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
       }
     } else {
-      BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
+      BadRequest(res)
     }
   }
 
