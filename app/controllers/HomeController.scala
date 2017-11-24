@@ -129,7 +129,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
       }
     } else {
-      BadRequest(res)
+      BadRequest(Json.toJson(
+        Map("message" -> res)
+      ))
     }
   }
 
@@ -174,7 +176,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         }
       }
     } else {
-      BadRequest(res)
+      BadRequest(Json.toJson(
+        Map("message" -> res)
+      ))
     }
   }
 
@@ -218,7 +222,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       val jsonResult = Json.obj("reservations" -> result)
       Ok(jsonResult)
     } else {
-      BadRequest(res)
+      BadRequest(Json.toJson(
+        Map("message" -> res)
+      ))
     }
   }
 
