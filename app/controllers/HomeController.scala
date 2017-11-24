@@ -1,9 +1,16 @@
 package controllers
 
+
 import java.security.SecureRandom
 import javax.inject._
 
+
 import com.fasterxml.jackson.databind.node.ObjectNode
+
+import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import com.google.firebase.auth.{FirebaseAuth, FirebaseToken}
+import com.google.firebase.tasks.{OnSuccessListener, Task, Tasks}
+
 import models.Helpers._
 import models._
 import org.mongodb.scala.MongoCollection
@@ -12,7 +19,7 @@ import org.mongodb.scala.model.Projections._
 import org.mongodb.scala.model.Updates._
 import play.api.libs.json.{JsError, JsResult, JsSuccess, JsValue, Json}
 import play.api.mvc._
-import utils.ValidationUtils
+import utils.{Firebase, ValidationUtils}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -119,11 +126,17 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     }
   }
 
+
   //http://localhost:9000/v1/reservation?reserve_id=RDZM1LS1D020171123K1520654374
   def cancelReservation(reserve_id: String) = Action { implicit request =>
     /*Check if the request has body*/
+
+    val token: Option[String]= request.headers.get("Authorization")
+    val res = Firebase.verifyToken(token);
+    println(res);
     val ReservationErrorMessage = "Invalid id code"
     if (reserve_id != null && !reserve_id.startsWith("RDZM")) {
+
       BadRequest(Json.toJson(
         Map("message" -> ReservationErrorMessage)
       ))
@@ -131,11 +144,12 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       var reservation: Reservation = reservations.find(equal("reserve_id", reserve_id)).headResult()
       if (reservation != null) {
         if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
+
           BadRequest(Json.toJson(
             Map("message" -> "The status of your reserve is not approved")
           ))
         } else {
-          reservations.updateOne(equal("reservation_id", reserve_id), set("state", "C")).headResult()
+          reservations.updateOne(equal("reserve_id", reserve_id), set("state", "C")).headResult()
           Ok(Json.toJson(
             Map("message" -> "Your reservation was successfully canceled!!")
           ))
@@ -224,5 +238,13 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           x.leave_date.replace("-", "").toInt >= newLeave))
 
     reservationsFiltered
+  }
+
+  def verifyFirebaseToken() = Action { implicit request =>
+    val token: Option[String] = request.headers.get("Authorization");
+    /*El método 'verifyToken' devuelve el user_id correspondiente al token
+    * en caso de éxito, en caso contrario devuelve un mensaje de error*/
+    val res = Firebase.verifyToken(token);
+    Ok(s"${res}")
   }
 }

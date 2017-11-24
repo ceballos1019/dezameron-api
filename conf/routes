@@ -10,5 +10,6 @@ GET    /v1/rooms                    controllers.HomeController.search(arrive_dat
 POST   /v1/rooms/reserve            controllers.HomeController.reserve
 DELETE /v1/reservations             controllers.HomeController.cancelReservation(reserve_id: String)
 GET    /v1/reservations             controllers.HomeController.getReservations
+GET    /v1/token                    controllers.HomeController.verifyFirebaseToken
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
