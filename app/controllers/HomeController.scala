@@ -271,8 +271,6 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
   def verifyFirebaseToken() = Action { implicit request =>
     val token: Option[String] = request.headers.get("Authorization");
-    /*El método 'verifyToken' devuelve el user_id correspondiente al token
-    * en caso de éxito, en caso contrario devuelve un mensaje de error*/
     val res = Firebase.verifyToken(token);
     Ok(s"${res}")
   }
