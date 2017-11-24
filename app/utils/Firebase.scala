@@ -11,7 +11,7 @@ import play.api.PlayException
 case class FirebaseException(s:String)
 
 object Firebase {
-  val credentials: InputStream = getClass.getResourceAsStream("/dezameron.json");
+  val credentials: InputStream = getClass.getResourceAsStream("/firebaseAdminCredentials.json");
 
   val AuthorizationErrorMessage = "Authorization header is empty"
   val TokenErrorMessage = "Token has expired or is not valid"
@@ -19,7 +19,7 @@ object Firebase {
 
   val options = new FirebaseOptions.Builder()
     .setServiceAccount(credentials)
-    .setDatabaseUrl("https://dezameron.firebaseio.com")
+    .setDatabaseUrl("https://gohotels-5a589.firebaseio.com")
     .build();
   FirebaseApp.initializeApp(options);
 
