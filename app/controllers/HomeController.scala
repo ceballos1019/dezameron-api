@@ -3,13 +3,14 @@ package controllers
 import java.security.SecureRandom
 import javax.inject._
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import models.Helpers._
 import models._
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
 import org.mongodb.scala.model.Updates._
-import play.api.libs.json.{JsError, JsResult, JsSuccess, Json, JsValue}
+import play.api.libs.json.{JsError, JsResult, JsSuccess, JsValue, Json}
 import play.api.mvc._
 import utils.ValidationUtils
 
@@ -57,7 +58,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
         }
 
         val jsonResult = Hotel(hotel.hotel_id, hotel.hotel_name, hotel.city, hotel.hotel_location, hotel.hotel_thumbnail,
-          hotel.check_in, hotel.check_out, hotel.hotel_website, roomsRes)
+          hotel.check_in, hotel.check_out, hotel.hotel_website, Some(roomsRes), None)
 
         Ok(Json.toJson(jsonResult))
       }
@@ -94,11 +95,11 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                     Map("message" -> "The room is not available")
                   ))
                 } else {
-                  response.reservation_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
+                  response.reserve_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
                   response.state = Some("A")
                   reservations.insertOne(response).headResult()
                   Ok(Json.toJson(
-                    Map("reservation_id" -> response.reservation_id)))
+                    Map("reservation_id" -> response.reserve_id)))
                 }
               } else {
                 BadRequest(Json.toJson(
@@ -117,33 +118,34 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
       BadRequest(Json.toJson(Map("error" -> "Bad Request", "description" -> "The request body is missing")))
     }
   }
-  //http://localhost:9000/v1/reservation/cancel?reservation_id=RDZM1LS1D020171123K1520654374
-  def cancelReservation(reservation_id: String) = Action { implicit request =>
+
+  //http://localhost:9000/v1/reservation?reserve_id=RDZM1LS1D020171123K1520654374
+  def cancelReservation(reserve_id: String) = Action { implicit request =>
     /*Check if the request has body*/
     val ReservationErrorMessage = "Invalid id code"
-    if(reservation_id != null && !reservation_id.startsWith("RDZM")){
+    if (reserve_id != null && !reserve_id.startsWith("RDZM")) {
       BadRequest(Json.toJson(
         Map("message" -> ReservationErrorMessage)
       ))
-    }else {
-      var reservation: Reservation = reservations.find(equal("reservation_id", reservation_id)).headResult()
+    } else {
+      var reservation: Reservation = reservations.find(equal("reserve_id", reserve_id)).headResult()
       if (reservation != null) {
-      if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
-        BadRequest(Json.toJson(
-          Map("message" -> "The status of your reserve is not approved")
-        ))
+        if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
+          BadRequest(Json.toJson(
+            Map("message" -> "The status of your reserve is not approved")
+          ))
+        } else {
+          reservations.updateOne(equal("reservation_id", reserve_id), set("state", "C")).headResult()
+          Ok(Json.toJson(
+            Map("message" -> "Your reservation was successfully canceled!!")
+          ))
+        }
       } else {
-        reservations.updateOne(equal("reservation_id", reservation_id), set("status", "C")).headResult()
-        Ok(Json.toJson(
-          Map("message" -> "Your reservation was successfully canceled!!")
-        ))
-      }
-    }else{
         BadRequest(Json.toJson(
           Map("message" -> "This reserve doesn´t exist")
         ))
       }
-        }
+    }
   }
 
 
@@ -158,8 +160,29 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
-  def getReservations(email: String) = Action {
-    Ok(Json.toJson(reservations.find(equal("user.email", email)).results()))
+  def getReservations = Action {
+    val hotelsResponse = hotels.find().projection(exclude("_id", "city", "rooms")).results()
+    val result = {
+      var hotelsJson: Seq[HotelResponse] = Nil
+      var reservationsJson: Seq[ReservationResponse] = Nil
+      for (hotel <- hotelsResponse) {
+        val reservationsResponse = reservations.find(equal("hotel_id", hotel.hotel_id)).results()
+        for (reservation <- reservationsResponse) {
+          val roomResponse = rooms.find(and(equal("room_type", reservation.room_type),
+            equal("capacity", reservation.capacity), equal("beds.simple", reservation.beds.simple),
+            equal("beds.double", reservation.beds.double))).headResult()
+          val roomReserve = RoomResponse(roomResponse.room_type, roomResponse.capacity,  roomResponse.price,
+            roomResponse.currency, roomResponse.room_thumbnail, roomResponse.description, roomResponse.beds)
+          reservationsJson = reservationsJson :+ ReservationResponse(reservation.state, reservation.reserve_id,
+            reservation.arrive_date, reservation.leave_date, roomReserve)
+        }
+        hotelsJson = hotelsJson :+ HotelResponse(hotel.hotel_id, hotel.hotel_name, hotel.hotel_thumbnail,
+          hotel.hotel_location, hotel.check_in, hotel.check_out, hotel.hotel_website, reservationsJson)
+      }
+      hotelsJson
+    }
+    val jsonResult = Json.obj("reservations" -> result)
+    Ok(jsonResult)
   }
 
   def checkRoom(hotelId: String, roomType: String, beds: Bed): Boolean = {
@@ -202,7 +225,4 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
     reservationsFiltered
   }
-def deleteReservation(value: String) = {
-
-}
 }

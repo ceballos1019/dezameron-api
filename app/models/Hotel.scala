@@ -18,7 +18,7 @@ object Location{
 case class  Hotel( hotel_id: String, hotel_name: String,
                   city:Option[String] ,hotel_location: Location,hotel_thumbnail:String,
                    check_in:String, check_out:String, hotel_website:String,
-                  rooms:Seq[Room])
+                  rooms:Option[Seq[Room]], reservation: Option[Seq[Reservation]])
 
 object Hotel {
   //Para poder convertir el modelo a BSON y viceversa
