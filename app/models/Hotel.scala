@@ -23,8 +23,8 @@ case class  Hotel( hotel_id: String, hotel_name: String,
 object Hotel {
   //Para poder convertir el modelo a BSON y viceversa
   val codecHotel : CodecRegistry = fromRegistries(fromProviders(classOf[Hotel]))
-  val COLLECTION_NAME : String = "hotels"
+  val CollectionName : String = "hotels"
 
-  implicit val hotelWrite = Json.writes[Hotel]
+  implicit val hotelWrite: Writes[Hotel] = Json.writes[Hotel]
 
 }

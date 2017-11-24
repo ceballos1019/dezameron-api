@@ -8,6 +8,7 @@ GET     /                           controllers.HomeController.index
 GET     /test                       controllers.HomeController.test
 GET    /v1/rooms                    controllers.HomeController.search(arrive_date: String, leave_date: String, city:String,hosts: Int, room_type:String)
 POST   /v1/rooms/reserve            controllers.HomeController.reserve
+DELETE /v1/reservations             controllers.HomeController.cancelReservation(reservation_id: String)
 GET    /v1/reservations             controllers.HomeController.getReservations(email: String)
 GET    /v1/token                    controllers.HomeController.verifyFirebaseToken
 # Map static resources from the /public folder to the /assets URL path
