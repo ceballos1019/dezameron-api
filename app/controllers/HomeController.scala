@@ -74,8 +74,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
 
   def reserve() = Action { implicit request =>
     val token: Option[String] = request.headers.get("Authorization");
-    val res = Firebase.verifyToken(token);
-    print(res)
+    val res = Firebase.verifyToken(token)
+
     /*Check if the request has body*/
     if (request.hasBody) {
       request.body.asJson match {
@@ -107,6 +107,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
                 } else {
                   response.reserve_id = generateCode(response.hotel_id, response.room_type, response.beds, response.arrive_date)
                   response.state = Some("A")
+                  response.user_id = Some(res)
                   reservations.insertOne(response).headResult()
                   Ok(Json.toJson(
                     Map("reservation_id" -> response.reserve_id)))
@@ -133,35 +134,37 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
   //http://localhost:9000/v1/reservation?reserve_id=RDZM1LS1D020171123K1520654374
   def cancelReservation(reserve_id: String) = Action { implicit request =>
     /*Check if the request has body*/
-
     val token: Option[String]= request.headers.get("Authorization")
-    val res = Firebase.verifyToken(token);
-    println(res);
-    val ReservationErrorMessage = "Invalid id code"
-    if (reserve_id != null && !reserve_id.startsWith("RDZM")) {
+    val res = Firebase.verifyToken(token)
+    if(!res.equals(Firebase.TokenErrorMessage) && !res.equals(Firebase.AuthorizationErrorMessage)) {
+      val ReservationErrorMessage = "Invalid id code"
+      if (reserve_id != null && !reserve_id.startsWith("RDZM")) {
 
-      BadRequest(Json.toJson(
-        Map("message" -> ReservationErrorMessage)
-      ))
-    } else {
-      var reservation: Reservation = reservations.find(equal("reserve_id", reserve_id)).headResult()
-      if (reservation != null) {
-        if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
+        BadRequest(Json.toJson(
+          Map("message" -> ReservationErrorMessage)
+        ))
+      } else {
+        val reservation: Reservation = reservations.find(equal("reserve_id", reserve_id)).headResult()
+        if (reservation != null) {
+          if ((!Some("A").equals(reservation.state)) && (!Some("a").equals(reservation.state))) {
 
-          BadRequest(Json.toJson(
-            Map("message" -> "The status of your reserve is not approved")
-          ))
+            BadRequest(Json.toJson(
+              Map("message" -> "The status of your reserve is not approved")
+            ))
+          } else {
+            reservations.updateOne(equal("reserve_id", reserve_id), set("state", "C")).headResult()
+            Ok(Json.toJson(
+              Map("message" -> "Your reservation was successfully canceled!!")
+            ))
+          }
         } else {
-          reservations.updateOne(equal("reserve_id", reserve_id), set("state", "C")).headResult()
-          Ok(Json.toJson(
-            Map("message" -> "Your reservation was successfully canceled!!")
+          BadRequest(Json.toJson(
+            Map("message" -> "This reserve doesn´t exist")
           ))
         }
-      } else {
-        BadRequest(Json.toJson(
-          Map("message" -> "This reserve doesn´t exist")
-        ))
       }
+    } else {
+      BadRequest(res)
     }
   }
 
@@ -177,29 +180,36 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index())
   }
 
-  def getReservations = Action {
-    val hotelsResponse = hotels.find().projection(exclude("_id", "city", "rooms")).results()
-    val result = {
-      var hotelsJson: Seq[HotelResponse] = Nil
-      var reservationsJson: Seq[ReservationResponse] = Nil
-      for (hotel <- hotelsResponse) {
-        val reservationsResponse = reservations.find(equal("hotel_id", hotel.hotel_id)).results()
-        for (reservation <- reservationsResponse) {
-          val roomResponse = rooms.find(and(equal("room_type", reservation.room_type),
-            equal("capacity", reservation.capacity), equal("beds.simple", reservation.beds.simple),
-            equal("beds.double", reservation.beds.double))).headResult()
-          val roomReserve = RoomResponse(roomResponse.room_type, roomResponse.capacity,  roomResponse.price,
-            roomResponse.currency, roomResponse.room_thumbnail, roomResponse.description, roomResponse.beds)
-          reservationsJson = reservationsJson :+ ReservationResponse(reservation.state, reservation.reserve_id,
-            reservation.arrive_date, reservation.leave_date, roomReserve)
+  def getReservations = Action { implicit request =>
+    val token: Option[String]= request.headers.get("Authorization")
+    val res = Firebase.verifyToken(token)
+
+    if(!res.equals(Firebase.TokenErrorMessage) && !res.equals(Firebase.AuthorizationErrorMessage)) {
+      val hotelsResponse = hotels.find().projection(exclude("_id", "city", "rooms")).results()
+      val result = {
+        var hotelsJson: Seq[HotelResponse] = Nil
+        var reservationsJson: Seq[ReservationResponse] = Nil
+        for (hotel <- hotelsResponse) {
+          val reservationsResponse = reservations.find(equal("hotel_id", hotel.hotel_id)).results()
+          for (reservation <- reservationsResponse) {
+            val roomResponse = rooms.find(and(equal("room_type", reservation.room_type),
+              equal("capacity", reservation.capacity), equal("beds.simple", reservation.beds.simple),
+              equal("beds.double", reservation.beds.double))).headResult()
+            val roomReserve = RoomResponse(roomResponse.room_type, roomResponse.capacity, roomResponse.price,
+              roomResponse.currency, roomResponse.room_thumbnail, roomResponse.description, roomResponse.beds)
+            reservationsJson = reservationsJson :+ ReservationResponse(reservation.state, reservation.reserve_id,
+              reservation.arrive_date, reservation.leave_date, roomReserve)
+          }
+          hotelsJson = hotelsJson :+ HotelResponse(hotel.hotel_id, hotel.hotel_name, hotel.hotel_thumbnail,
+            hotel.hotel_location, hotel.check_in, hotel.check_out, hotel.hotel_website, reservationsJson)
         }
-        hotelsJson = hotelsJson :+ HotelResponse(hotel.hotel_id, hotel.hotel_name, hotel.hotel_thumbnail,
-          hotel.hotel_location, hotel.check_in, hotel.check_out, hotel.hotel_website, reservationsJson)
+        hotelsJson
       }
-      hotelsJson
+      val jsonResult = Json.obj("reservations" -> result)
+      Ok(jsonResult)
+    } else {
+      BadRequest(res)
     }
-    val jsonResult = Json.obj("reservations" -> result)
-    Ok(jsonResult)
   }
 
   def checkRoom(hotelId: String, roomType: String, beds: Bed): Boolean = {

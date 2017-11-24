@@ -13,6 +13,10 @@ case class FirebaseException(s:String)
 object Firebase {
   val credentials: InputStream = getClass.getResourceAsStream("/dezameron.json");
 
+  val AuthorizationErrorMessage = "Authorization header is empty"
+  val TokenErrorMessage = "Token has expired or is not valid"
+
+
   val options = new FirebaseOptions.Builder()
     .setServiceAccount(credentials)
     .setDatabaseUrl("https://dezameron.firebaseio.com")
@@ -31,9 +35,9 @@ object Firebase {
             decodedToken.getUid
 
           } catch {
-            case e: Exception => "Token has expired or is not valid"
+            case e: Exception => TokenErrorMessage
           }
-      case None => "Authorization header is empty"
+      case None => AuthorizationErrorMessage
     }
   }
 

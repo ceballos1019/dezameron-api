@@ -7,7 +7,7 @@ import org.mongodb.scala.bson.codecs.Macros._
 import play.api.libs.json._
 
 case class Reservation(var reserve_id: Option[String], arrive_date: String, leave_date: String, room_type:String,
-                capacity: Int, beds: Bed, hotel_id: String, user: User, var state: Option[String])
+                capacity: Int, beds: Bed, hotel_id: String, user: User, var state: Option[String], var user_id: Option[String])
 
 object Reservation{
 
