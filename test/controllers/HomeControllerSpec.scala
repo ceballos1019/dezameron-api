@@ -1,10 +1,12 @@
 package controllers
 
+import models.Bed
+import org.scalatest.BeforeAndAfter
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.libs.json.Json
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test._
 
 /**
  * Add your spec here.
@@ -12,7 +14,13 @@ import play.api.test.Helpers._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting with BeforeAndAfter {
+
+  var tokenAuthorization:String = ""
+
+  before{
+    tokenAuthorization = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjRmMDYzNDJiNDdjYTQ1Zjg0NjM2MTk0NjE5MjNiMDdjYzQ4OTA1N2UifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29ob3RlbHMtNWE1ODkiLCJuYW1lIjoiQW5kcsOpcyBDZWJhbGxvcyBTw6FuY2hleiIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLU1wOWxzMXhBVDR3L0FBQUFBQUFBQUFJL0FBQUFBQUFBQUtnL3dGNkRNTGRUYWlzL3Bob3RvLmpwZyIsImF1ZCI6ImdvaG90ZWxzLTVhNTg5IiwiYXV0aF90aW1lIjoxNTExNTY4NDU5LCJ1c2VyX2lkIjoic1NiV0dhenRzUE96R1R4anNRUXhaRTlsd3kzMiIsInN1YiI6InNTYldHYXp0c1BPekdUeGpzUVF4WkU5bHd5MzIiLCJpYXQiOjE1MTE1NzgwNzcsImV4cCI6MTUxMTU4MTY3NywiZW1haWwiOiJjZWJhbGxvcy5kaW1AZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDc0MDI0NTQ2NDA3MjIyODAxOTciXSwiZW1haWwiOlsiY2ViYWxsb3MuZGltQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6Imdvb2dsZS5jb20ifX0.V7E6vZZ-6qxkATd96P-j0J1qoBUUwAxFVE1J1n4SjJP42cHkH32hcuxB7kiDKbq-QYAdWUdqPHglMSW20_YrshRnQ8VnKAYKeKDvpa6GMJdMzM_m-rcVYDBbC-gtcezd8TqMJYCDscJET1tx8eu2j89qE3GcEZsZKEUVhcfX3N6xWqiX3R_cBr3d0cl500kIF18Ok2d6VQZ4jqSRM_Y6F4Y6afhxgV5FaF4SvBdqzF7jjy_diWwiN6gzJQEA0fNj5iicCJwc69yoA7Dwvy-9oSuIkq9FuM2UejVLBAZYCnfCfCdL1_9Jd92TGO3Tg5o_OLk3tFIUBlAfAzaq8Rjzmw"
+  }
 
   "HomeController GET" should {
 
@@ -136,6 +144,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       (contentAsJson(search) \ "message").as[String] mustBe roomValidationMessage
     }
   }
+
   "Reserve" should {
 
     "reserve return a 200 status" in {
@@ -144,8 +153,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val reserve = controller.reserve().apply(
         FakeRequest(POST, "/v1/rooms/reserve").withJsonBody(
           Json.parse("""{
-                        "arrive_date": "2017-09-08",
-                        "leave_date": "2017-09-09",
+                        "arrive_date": "2017-11-08",
+                        "leave_date": "2017-11-09",
                         "room_type": "S",
                         "capacity": 5,
                         "beds": {
@@ -159,11 +168,12 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
-      status(reserve) mustBe OK
+      //status(reserve) mustBe OK
+      contentType(reserve) mustBe Some("application/json")
 
-      //contentAsString(search) must include ("Welcome to Play")
+
     }
 
     "reserve return a json" in {
@@ -197,10 +207,11 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -225,10 +236,11 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -253,10 +265,11 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -282,10 +295,11 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -310,10 +324,11 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -338,7 +353,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
@@ -351,8 +366,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       val reserve = controller.reserve().apply(
         FakeRequest(POST, "/v1/rooms/reserve").withJsonBody(
           Json.parse("""{
-                        "arrive_date": "2017-09-05",
-                        "leave_date": "2017-09-08",
+                        "arrive_date": "2017-10-10",
+                        "leave_date": "2017-10-11",
                         "room_type": "L",
                         "capacity": 4,
                         "beds": {
@@ -366,7 +381,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
@@ -394,11 +409,87 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
                            "email": "test@test.te",
                            "phone_number": "4064543"
                          }
-                       }""")))
+                       }""")).withHeaders(AUTHORIZATION -> tokenAuthorization))
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
       (contentAsJson(reserve) \ "description").as[String] mustBe validationMessage
     }
   }
+
+  "My Reservations" should {
+
+    "return message when there is no token in the header" in {
+      val controller = inject[HomeController]
+      val noHeaderMessage = "Authorization header is empty"
+      val myReservations = controller.getReservations().apply(FakeRequest(GET, "v1/reservations"))
+      (contentAsJson(myReservations) \ "message").as[String] mustBe noHeaderMessage
+    }
+
+    "validate the token" in {
+      val controller = inject[HomeController]
+      val validationTokenMessage = "Token has expired or is not valid"
+      val invalidToken = "3sT3_e5_uN_t0kEn_iNv4l1d0"
+      val myReservations = controller.getReservations().apply(FakeRequest(GET, "v1/reservations").
+        withHeaders(AUTHORIZATION -> invalidToken))
+      (contentAsJson(myReservations) \ "message").as[String] mustBe validationTokenMessage
+    }
+
+    "return status 200" in {
+      val controller = inject[HomeController]
+      val myReservations = controller.getReservations().apply(FakeRequest(GET, "v1/reservations").
+        withHeaders(AUTHORIZATION -> tokenAuthorization))
+
+      status(myReservations) mustBe OK
+    }
+
+    "return json response" in {
+      val controller = inject[HomeController]
+      val myReservations = controller.getReservations().apply(FakeRequest(GET, "v1/resrvations").
+        withHeaders(AUTHORIZATION -> tokenAuthorization))
+
+      contentType(myReservations) mustBe Some("application/json")
+
+    }
+  }
+
+
+  "checkRoom" should{
+    "return a true boolean" in{
+      val beds= new Bed(0,2)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("2","L",beds)
+      room mustBe true
+    }
+    "return a false boolean" in {
+      val beds= new Bed (0,1)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("1","S",beds)
+      room mustBe false
+    }
+  }
+"generateCode" should{
+    "return the first part code" in{
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      val codemin:String = code.getOrElse("ERROR").substring(0,4)
+      codemin mustBe ("RDZM")
+    }
+    "return a static part code" in {
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      val codemin:String = code.getOrElse("ERROR").substring(0,19)
+      codemin mustBe ("RDZM1LS1D020171116K")
+    }
+   /* "there is no reservation code" in{
+      val beds= new Bed(0,1)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","S",beds,"2014-11-16")
+      val codemin:String = code.getOrElse("ERROR")
+      codemin mustBe ("ERROR")
+    }*/
+  }
+
 }
