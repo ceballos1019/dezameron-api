@@ -1,6 +1,6 @@
 package controllers
 
-import org.scalatest.Matchers
+import models.Bed
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.libs.json.Json
@@ -166,7 +166,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       //status(reserve) mustBe OK
       contentType(reserve) mustBe Some("application/json")
 
-      //contentAsString(search) must include ("Welcome to Play")
+
     }
 
     "reserve return a json" in {
@@ -204,6 +204,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -232,6 +233,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe dateValidationMessage
     }
 
@@ -260,6 +262,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -289,6 +292,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -317,6 +321,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(reserve) mustBe BAD_REQUEST
       contentType(reserve) mustBe Some("application/json")
+      //status(reserve) mustBe OK
       (contentAsJson(reserve) \ "message").as[String] mustBe validationMessage
     }
 
@@ -404,4 +409,44 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       (contentAsJson(reserve) \ "description").as[String] mustBe validationMessage
     }
   }*/
+
+
+  "checkRoom" should{
+    "return a true boolean" in{
+      val beds= new Bed(0,2)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("2","L",beds)
+      room mustBe true
+    }
+    "return a false boolean" in {
+      val beds= new Bed (0,1)
+      val controller = inject[HomeController]
+      val room = controller.checkRoom("1","S",beds)
+      room mustBe false
+    }
+  }
+"generateCode" should{
+    "return the first part code" in{
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      val codemin:String = code.getOrElse("ERROR").substring(0,4)
+      codemin mustBe ("RDZM")
+    }
+    "return a static part code" in {
+      val beds= new Bed(1,0)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","L",beds,"2017-11-16")
+      val codemin:String = code.getOrElse("ERROR").substring(0,19)
+      codemin mustBe ("RDZM1LS1D020171116K")
+    }
+   /* "there is no reservation code" in{
+      val beds= new Bed(0,1)
+      val controller = inject[HomeController]
+      val code = controller.generateCode("1","S",beds,"2014-11-16")
+      val codemin:String = code.getOrElse("ERROR")
+      codemin mustBe ("ERROR")
+    }*/
+  }
+
 }

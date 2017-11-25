@@ -8,6 +8,7 @@ import play.api.libs.json._
 case class Bed(simple:Int, double:Int)
 
 object Bed{
+  /*Codec for Bed class*/
 
   val codecBed : CodecRegistry  = fromRegistries(fromProviders(classOf[Bed]))
 

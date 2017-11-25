@@ -17,11 +17,6 @@ object Reservation{
 
   implicit val reservationWrite : Writes[Reservation] = Json.writes[Reservation]
   implicit val reservationRead : Reads[Reservation] = Json.reads[Reservation]
-/*
-  implicit val objectIdWrites = new Writes[ObjectId] {
-    def writes(oId: ObjectId): JsValue = {
-      JsString(oId.toString)
-    }
-  }*/
+
 
 }

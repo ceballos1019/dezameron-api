@@ -10,6 +10,7 @@ case class Room( room_id: Option[Int], hotel_id:  Option[String], room_type:Stri
                 description:String, beds: Bed)
 
 object Room{
+  /*Codec for Room class*/
 
   val codecRoom : CodecRegistry  = fromRegistries(fromProviders(classOf[Room]))
   val CollectionName : String = "rooms"
